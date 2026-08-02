@@ -12,6 +12,8 @@ export class CameraManager{
 
     async start(){
 
+        console.log("CameraManager.start()");
+        
         const stream=await navigator.mediaDevices.getUserMedia({
 
             video:{
