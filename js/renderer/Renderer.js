@@ -1,34 +1,37 @@
 export class Renderer {
 
     constructor(canvas) {
+
         this.canvas = canvas;
+
         this.ctx =
             canvas.getContext("2d");
+
     }
 
-    resize(width, height) {
+
+    resize(width,height) {
+
         this.canvas.width = width;
         this.canvas.height = height;
+
     }
 
+
     clear() {
+
         this.ctx.clearRect(
             0,
             0,
             this.canvas.width,
             this.canvas.height
         );
+
     }
 
-    drawFrame(frame) {
-        this.ctx.putImageData(
-            frame.imageData,
-            0,
-            0
-        );
-    }
 
     drawMarkers(markers) {
+
 
         if (
             !markers ||
@@ -42,6 +45,7 @@ export class Renderer {
 
         const ctx = this.ctx;
 
+
         ctx.strokeStyle = "lime";
         ctx.lineWidth = 2;
 
@@ -52,10 +56,13 @@ export class Renderer {
             i++
         ) {
 
+
             const corner =
                 markers.corners.get(i);
 
+
             ctx.beginPath();
+
 
             ctx.moveTo(
                 corner.data32F[0],
@@ -76,6 +83,7 @@ export class Renderer {
 
             }
 
+
             ctx.closePath();
 
             ctx.stroke();
@@ -85,3 +93,4 @@ export class Renderer {
     }
 
 }
+
