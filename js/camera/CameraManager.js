@@ -10,9 +10,7 @@ export class CameraManager{
 
     }
 
-    async start(){
-
-        console.log("CameraManager.start()");
+    async start(){      
         
         const stream=await navigator.mediaDevices.getUserMedia({
 
@@ -26,9 +24,7 @@ export class CameraManager{
 
             }
 
-        });
-
-        console.log("Camera granted");
+        });        
         
         this.video.srcObject=stream;
 
