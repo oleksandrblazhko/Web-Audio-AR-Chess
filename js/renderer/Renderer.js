@@ -37,4 +37,10 @@ export class Renderer {
 
     }
 
+    drawMarkers(markers) {
+
+    // Тимчасово нічого не робимо
+
+    }
+
 }

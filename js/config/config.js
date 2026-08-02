@@ -1,17 +1,20 @@
 export const Config = {
 
-    cameraWidth:640,
+    cameraWidth: 640,
 
-    cameraHeight:480,
+    cameraHeight: 480,
 
-    fps:30,
+    fps: 30,
 
-    markerColor:"#00FF00",
+    markerColor: "#00FF00",
 
-    textColor:"#00FF00",
+    textColor: "#00FF00",
 
-    lineWidth:3,
+    lineWidth: 3,
 
-    dictionary:"DICT_4X4_1000"
+    dictionary: "DICT_4X4_1000",
+
+    detector: "opencv"
 
 };
+
