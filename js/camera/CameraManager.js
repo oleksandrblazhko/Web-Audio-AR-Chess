@@ -28,6 +28,8 @@ export class CameraManager{
 
         });
 
+        console.log("Camera granted");
+        
         this.video.srcObject=stream;
 
         await this.video.play();
