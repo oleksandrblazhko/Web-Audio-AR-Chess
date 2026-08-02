@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Aruco Detector</title>
+
+    <link rel="icon" href="assets/favicon.ico">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+
+    <!-- Налаштування OpenCV -->
+    <script>
+        var Module = {
+
+            print(text) {
+                console.log("[OpenCV]", text);
+            },
+
+            printErr(text) {
+                console.error("[OpenCV]", text);
+            },
+
+            onRuntimeInitialized() {
+                console.log("=== OpenCV runtime initialized ===");
+            }
+
+        };
+    </script>
+
+    <!-- OpenCV -->
+    <script src="libs/opencv/opencv.js"></script>
+
+    <!-- Ваш застосунок -->
+    <script type="module" src="js/app.js"></script>
+
+</body>
+
+</html>
+
