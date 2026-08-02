@@ -91,7 +91,12 @@ function loop() {
         const frameCanvas = frameProvider.getFrame();
         const mat = frameConverter.convert(frameCanvas);
         const markers = detector.detect(mat);
-        markers.count = markers.ids.rows;
+        if (markers.ids) {
+            markers.count = markers.ids.rows;
+        }
+        else {
+            markers.count = 0;
+        }
         renderer.ctx.drawImage(frameCanvas,0,0);
         renderer.drawMarkers(markers);
         if(markers.corners)

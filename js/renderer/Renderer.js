@@ -29,17 +29,13 @@ export class Renderer {
 
     }
 
-
     drawMarkers(markers) {
-
 
         if (
             !markers ||
             markers.count === 0
         ) {
-
             return;
-
         }
 
 
@@ -48,6 +44,9 @@ export class Renderer {
 
         ctx.strokeStyle = "lime";
         ctx.lineWidth = 2;
+
+        ctx.font = "17px Arial";
+        ctx.fillStyle = "yellow";
 
 
         for (
@@ -60,6 +59,10 @@ export class Renderer {
             const corner =
                 markers.corners.get(i);
 
+
+            // ----------------------------
+            // 1. Малювання рамки
+            // ----------------------------
 
             ctx.beginPath();
 
@@ -88,9 +91,42 @@ export class Renderer {
 
             ctx.stroke();
 
+
+
+            // ----------------------------
+            // 2. Виведення ID маркера
+            // ----------------------------
+
+            if (
+                markers.ids &&
+                markers.ids.rows > i
+            ) {
+
+
+                const id =
+                    markers.ids.data[i];
+
+
+                const x =
+                    corner.data32F[0];
+
+
+                const y =
+                    corner.data32F[1];
+
+
+                ctx.fillText(
+                    id,
+                    x + 10,
+                    y - 10
+                );
+
+            }
+
         }
 
     }
+
 
 }
 
