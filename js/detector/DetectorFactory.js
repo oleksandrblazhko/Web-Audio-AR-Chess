@@ -1,19 +1,12 @@
-import { Config } from "../config/config.js";
 import { OpenCvArucoDetector } from "./OpenCvArucoDetector.js";
+
 
 export class DetectorFactory {
 
-    static create() {
 
-        switch (Config.detector) {
+    static create(cv) {
 
-            case "opencv":
-                return new OpenCvArucoDetector();
-
-            default:
-                throw new Error("Unknown detector");
-
-        }
+        return new OpenCvArucoDetector(cv);
 
     }
 
