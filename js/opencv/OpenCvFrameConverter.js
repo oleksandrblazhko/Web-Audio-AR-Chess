@@ -7,7 +7,6 @@ export class OpenCvFrameConverter {
 
     }
 
-
     convert(frame) {
 
         return this.cv.matFromImageData(

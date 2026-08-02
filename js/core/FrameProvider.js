@@ -7,7 +7,9 @@ export class FrameProvider {
         this.video = video;
 
         this.canvas = document.createElement("canvas");
-        this.context = this.canvas.getContext("2d");
+        // this.context = this.canvas.getContext("2d");
+        this.context = this.canvas.getContext("2d",{willReadFrequently: true}
+);
 
     }
 
@@ -27,7 +29,22 @@ export class FrameProvider {
             this.canvas.width,
             this.canvas.height
         );
+/*
+        const pixel = this.context.getImageData(
+            10,
+            10,
+            1,
+            1
+        ).data;
 
+        console.log(
+            "Pixel:",
+            pixel[0],
+            pixel[1],
+            pixel[2],
+            pixel[3]
+        );
+*/
         const imageData = this.context.getImageData(
         0,
         0,
