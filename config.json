@@ -1,0 +1,16 @@
+{
+  "cameraWidth": 640,
+  "cameraHeight": 480,
+  "fps": 30,
+  "markerColor": "#00FF00",
+  "textColor": "#00FF00",
+  "lineWidth": 3,
+  "dictionary": "DICT_4X4_1000",
+  "detector": "opencv",
+  "gridProximityThreshold": 0.6,
+  "cameraProxHeightThreshold": 0.4,
+  "markerTimeoutMs": 1000,
+  "emaAlpha": 0.4,
+  "audioDirectory": "audio/",
+  "safety_zone_margin_pct": 10
+}

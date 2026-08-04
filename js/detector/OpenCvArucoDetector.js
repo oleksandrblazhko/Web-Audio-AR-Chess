@@ -1,4 +1,4 @@
-import { MarkerDetection } from "../models/MarkerDetection.js";
+import { Marker } from "../models/Marker.js";
 
 export class OpenCvArucoDetector {
 
@@ -80,41 +80,38 @@ export class OpenCvArucoDetector {
         );
 
 
-/*
-        console.log(
-            "corners:",
-            corners.size()
-        );
-
-        console.log(
-            "ids rows:",
-            ids.rows
-        );
-
+        const markerList = [];
 
         if (ids.rows > 0) {
-
-            console.log(
-                "ids:",
-                ids.data
-            );
-
+            for (let i = 0; i < ids.rows; i++) {
+                // Отримуємо ID (іноді ids.data32S використовується для цілих чисел в OpenCV.js)
+                const id = ids.data32S ? ids.data32S[i] : ids.data[i];
+                const marker = new Marker(id);
+                const cornerMat = corners.get(i);
+                
+                // cornerMat містить 8 значень: x0, y0, x1, y1, x2, y2, x3, y3
+                marker.addCorner(cornerMat.data32F[0], cornerMat.data32F[1]);
+                marker.addCorner(cornerMat.data32F[2], cornerMat.data32F[3]);
+                marker.addCorner(cornerMat.data32F[4], cornerMat.data32F[5]);
+                marker.addCorner(cornerMat.data32F[6], cornerMat.data32F[7]);
+                
+                markerList.push(marker);
+            }
         }
-*/
+
 
         // ----------------------------------------
         // Memory cleanup
         // ----------------------------------------
 
         gray.delete();
+        corners.delete();
+        ids.delete();
+        rejected.delete();
 
-        return new MarkerDetection(
-            corners,
-            ids
-        );
+        return markerList;
 
     }
 
 
 }
-
