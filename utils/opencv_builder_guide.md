@@ -1,6 +1,97 @@
 # Створення власної збірки OpenCV.js
 
-Інструкція створення OpenCV.js з підтримкою ArUco-модуля.
+## Інструкція створення OpenCV.js з підтримкою ArUco-модуля в ОС Linux Debian
+
+### 1 Встановлення пакунків
+
+sudo apt install python3
+sudo apt install python3-pip
+- встановлення базового набору інструментів для компіляції програм із вихідного коду (gcc, make, ... )
+sudo apt install build-essential
+- встановлення пакунку розробника для для компіляції розширень на C/C++
+sudo apt install python3-dev
+- створення команди python
+sudo apt install python-is-python3
+- встановлення системи генерації конфігурації збірки cmake
+sudo apt install cmake
+
+### 2 Встановлення Emscripten SDK (emsdk)
+Emscripten SDK (emsdk) - інструменти компіляції програм мовами C/C++ у WebAssembly (WASM) та JavaScript для виконання у веб-браузері.
+
+- 2.1 Створення робочого каталогу та клонування SDK:
+mkdir -p ~/dev
+cd ~/dev
+git clone https://github.com/emscripten-core/emsdk.git
+
+- 2.2 Перехід у каталог та встановлення:
+cd ~/dev/emsdk
+./emsdk install latest
+
+- 2.3 Активація та завантаження змінних середовища:
+./emsdk activate latest
+source ./emsdk_env.sh
+
+### 3 Завантаження OpenCV та перехід до версії-гілки
+cd ~/dev
+git clone https://github.com/opencv/opencv.git
+cd opencv
+git fetch --all
+git tag -l "5*"
+
+git checkout -b 5.x origin/5.x
+git checkout 5.0.0
+
+### 4 Завантаження OpenCV Contrib з додатковими модулями, наприклад, ArUco
+cd ~/dev
+git clone https://github.com/opencv/opencv_contrib.git
+cd opencv_contrib
+git checkout -b 5.x origin/5.x
+
+### 5 Створення каталогу збірки
+rm -rf ~/dev/opencv-build
+mkdir ~/dev/opencv-build
+
+### 6 Активація Emscripten
+Перед кожною збіркою необхідно активувати SDK:
+cd ~/dev/emsdk
+source ./emsdk_env.sh
+
+### 7 Конфігурація OpenCV.js з автоматизованим налаштуванням cmake
+cd ~/dev/opencv
+
+python platforms/js/build_js.py \
+    ~/dev/opencv-build \
+    --build_wasm \
+    --config_only \
+    --cmake_option="-DOPENCV_EXTRA_MODULES_PATH=$HOME/dev/opencv_contrib/modules" \
+    --cmake_option="-DWITH_HARFBUZZ=OFF" \
+    --cmake_option="-DBUILD_opencv_freetype=OFF"
+
+### 8 Компіляція з використанням максимальної кількості ядер (через команду nproc)
+cd ~/dev/opencv-build
+make -j$(nproc)
+
+$(nproc) автоматично визначає кількість процесорних ядер і використовує їх для паралельної компіляції.
+
+### 9 Копіювання результату збірки
+ls ~/dev/opencv-build/bin/
+Після успішної компіляції будуть створені файли:
+opencv.js
+opencv_js.wasm
+cp opencv.js /...
+scp -P 1234 blazhko@localhost:/home/blazhko/dev/opencv-build/bin/opencv.js .
+
+scp -P 1234 blazhko@localhost:/home/blazhko/dev/opencv-build/bin/opencv_js.js .
+
+### Перевірка роботи
+- запустити в каталозі сервер
+http_server .
+- перевірити роботу
+http://127.0.0.1:8080/test.html
+
+
+### 
+## Інструкція створення OpenCV.js з підтримкою ArUco-модуля.
 
 Середовище:
 
