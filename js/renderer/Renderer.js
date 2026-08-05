@@ -45,7 +45,12 @@ export class Renderer {
                 if (corner.y < minY) minY = corner.y;
             }
 
-            ctx.fillText(`${marker.id}`, minX, minY);
+            ctx.fillText(`${marker.id}`, minX, minY - 20);
+            if (marker.estimatedHeight > 0) {
+                ctx.fillStyle = "orange";
+                ctx.fillText(`h: ${marker.estimatedHeight.toFixed(1)}mm`, minX, minY - 5);
+                ctx.fillStyle = textColor || "yellow";
+            }
         }
     }
 

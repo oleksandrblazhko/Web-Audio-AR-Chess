@@ -233,47 +233,51 @@ function loop() {
     if (video.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
         const frameCanvas = frameProvider.getFrame();
         const mat = frameConverter.convert(frameCanvas);
-        
-        // Виявлення маркерів
-        const detectedMarkers = detector.detect(mat, calibration);
         const now = performance.now();
+        
+        // --- Step 1: Detect raw markers ---
+        const detectedMarkers = detector.detect(mat);
 
-        // 1. Оновлення видимих маркерів та згладжування EMA
+        // --- Step 2: Update visible markers list and apply EMA smoothing ---
         for (const marker of detectedMarkers) {
             marker.timestamp = now;
 
-            // Фільтрація координат 4-х кутів EMA
             if (!markerFilters[marker.id]) {
+                // First time seeing this marker, initialize filter
                 markerFilters[marker.id] = marker.corners.map(c => new Point(c.x, c.y));
             } else {
+                // Apply EMA filter to the raw corners
                 const prevCorners = markerFilters[marker.id];
                 for (let j = 0; j < 4; j++) {
                     prevCorners[j].x = Config.emaAlpha * marker.corners[j].x + (1.0 - Config.emaAlpha) * prevCorners[j].x;
                     prevCorners[j].y = Config.emaAlpha * marker.corners[j].y + (1.0 - Config.emaAlpha) * prevCorners[j].y;
-                    
-                    marker.corners[j].x = prevCorners[j].x;
-                    marker.corners[j].y = prevCorners[j].y;
                 }
+                // Overwrite the marker's corners with the smoothed version
+                marker.corners = prevCorners;
+                marker.center = marker.calculateCenter();
             }
-
-            // Оновлюємо або додаємо маркер у словник видимих
+            // Add/update the marker in the global list
             visibleMarkers[marker.id] = marker;
         }
 
-        // 2. Очищення застарілих маркерів за тайм-аутом
+        // --- Step 3: Clean up stale markers ---
         for (const id in visibleMarkers) {
             if (now - visibleMarkers[id].timestamp > Config.markerTimeoutMs) {
                 delete visibleMarkers[id];
                 delete markerFilters[id];
             }
         }
+        
+        // --- Step 4: Apply perspective correction (modifies markers in place) ---
+        const markersToProcess = Object.values(visibleMarkers);
+        detector.correctMarkers(markersToProcess, calibration);
 
-        // 3. Оновлення логіки калібрування дошки
+        // --- Step 5: Update calibration logic ---
         if (calibration.isCalibratingNow()) {
             calibration.update(visibleMarkers, Config.boundaryIds);
         }
 
-        // 4. Перевірка наближення (proximity check)
+        // --- Step 6: Proximity checks ---
         let closestDistance = Infinity;
         proximityDetector.checkCameraProximity(visibleMarkers, objectsData, calibration, Config.cameraProxHeightThreshold);
         
@@ -286,17 +290,13 @@ function loop() {
             Config.gridProximityThreshold
         );
 
-        // 5. Рендеринг зображення та графіки
-        
-        // Фільтрація маркерів для візуалізації
-        let markersToRender = Object.values(visibleMarkers);
-        if (Config.anyMarkerVision === false) {
-            markersToRender = markersToRender.filter(marker => objectsData.hasOwnProperty(marker.id));
-        }
+        // --- Step 7: Rendering ---
+        const markersToRender = Object.values(visibleMarkers).filter(marker => 
+            Config.anyMarkerVision || objectsData.hasOwnProperty(marker.id)
+        );
 
         renderer.clear();
 
-        // Віддзеркалення відео камери (якщо увімкнено)
         if (mirrorEnabled) {
             renderer.ctx.save();
             renderer.ctx.translate(renderer.canvas.width, 0);
@@ -307,20 +307,15 @@ function loop() {
             renderer.ctx.drawImage(frameCanvas, 0, 0);
         }
 
-        // Малювання меж та сітки
         renderer.drawBoundary(calibration);
         renderer.drawTableGrid(calibration, Config.gridColor);
-
-        // Малювання видимих маркерів та їх проекцій
         renderer.drawMarkers(markersToRender, Config.textColor);
         renderer.drawProjectedMarkers(markersToRender, calibration, objectsData);
-
-        // Малювання безпечної зони
+        
         if (showOptimalZone) {
             renderer.drawOptimalZone(safetyZoneMarginPct);
         }
 
-        // Малювання UI тексту
         renderer.drawUIInfo(
             calibration,
             Config.gridProximityThreshold,
@@ -330,7 +325,6 @@ function loop() {
             visibleMarkers
         );
 
-        // Звільнення матриці OpenCV.js
         mat.delete();
     }
     

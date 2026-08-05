@@ -20,7 +20,7 @@ export class OpenCvArucoDetector {
         this.perspectiveCorrector = new PerspectiveCorrector(cv);
     }
 
-    detect(frame, calibration) {
+    detect(frame) {
         let gray = new this.cv.Mat();
         this.cv.cvtColor(frame, gray, this.cv.COLOR_RGBA2GRAY);
 
@@ -48,41 +48,44 @@ export class OpenCvArucoDetector {
             }
         }
         
-        // --- Perspective Correction Step ---
-        if (calibration && 
-            calibration.image_to_board_matrix && !calibration.image_to_board_matrix.empty() &&
-            calibration.board_to_image_matrix && !calibration.board_to_image_matrix.empty()
-            ) {
-            
-            const boardDimensions = Config.boardDimensions;
-            const boardCenter = new Point(boardDimensions / 2, boardDimensions / 2);
-
-            // Ensure matrices are 32F for the perspectiveTransform function
-            const image_to_board_32f = new this.cv.Mat();
-            const board_to_image_32f = new this.cv.Mat();
-            calibration.image_to_board_matrix.convertTo(image_to_board_32f, this.cv.CV_32F);
-            calibration.board_to_image_matrix.convertTo(board_to_image_32f, this.cv.CV_32F);
-
-            this.perspectiveCorrector.correct(
-                markerList,
-                boardCenter,
-                Config.cameraHeightCali,
-                Config.markerSize,
-                boardDimensions,
-                image_to_board_32f,
-                board_to_image_32f
-            );
-
-            // Cleanup
-            image_to_board_32f.delete();
-            board_to_image_32f.delete();
-        }
-
         gray.delete();
         corners.delete();
         ids.delete();
         rejected.delete();
 
         return markerList;
+    }
+
+    correctMarkers(markers, calibration) {
+        if (!calibration || 
+            !calibration.image_to_board_matrix || calibration.image_to_board_matrix.empty() ||
+            !calibration.board_to_image_matrix || calibration.board_to_image_matrix.empty()
+            ) {
+            return; // No correction possible
+        }
+            
+        const boardDimensions = Config.boardDimensions;
+        const boardCenter = new Point(boardDimensions / 2, boardDimensions / 2);
+
+        // Ensure matrices are 32F for the perspectiveTransform function
+        const image_to_board_32f = new this.cv.Mat();
+        const board_to_image_32f = new this.cv.Mat();
+        calibration.image_to_board_matrix.convertTo(image_to_board_32f, this.cv.CV_32F);
+        calibration.board_to_image_matrix.convertTo(board_to_image_32f, this.cv.CV_32F);
+
+        // This method will now modify the markers in the list directly
+        this.perspectiveCorrector.correct(
+            markers,
+            boardCenter,
+            Config.cameraHeightCali,
+            Config.markerSize,
+            boardDimensions,
+            image_to_board_32f,
+            board_to_image_32f
+        );
+
+        // Cleanup
+        image_to_board_32f.delete();
+        board_to_image_32f.delete();
     }
 }

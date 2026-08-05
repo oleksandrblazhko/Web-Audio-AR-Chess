@@ -21,8 +21,12 @@ export class PerspectiveCorrector {
             const centerMm = this._calculateCenter(mmCorners);
             const sPiece = this._calculateAverageSideLength(mmCorners);
 
-            if (sPiece < markerSize) continue;
+            if (sPiece < markerSize) {
+                marker.estimatedHeight = 0;
+                continue;
+            };
             const h = cameraHeight * (1 - markerSize / sPiece);
+            marker.estimatedHeight = h; // Store for debugging
             if (h <= 0) continue;
 
             // Step 3: Calculate the single correction vector in millimeter space
