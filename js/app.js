@@ -235,7 +235,7 @@ function loop() {
         const mat = frameConverter.convert(frameCanvas);
         
         // Виявлення маркерів
-        const detectedMarkers = detector.detect(mat);
+        const detectedMarkers = detector.detect(mat, calibration);
         const now = performance.now();
 
         // 1. Оновлення видимих маркерів та згладжування EMA

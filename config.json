@@ -14,5 +14,8 @@
   "anyMarkerVision": false,
   "gridColor": "blue",
   "audioDirectory": "audio/",
-  "safety_zone_margin_pct": 10
+  "safety_zone_margin_pct": 10,
+  "cameraHeightCali": 450,
+  "boardDimensions": 360,
+  "markerSize": 9
 }
