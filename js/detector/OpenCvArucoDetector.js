@@ -42,47 +42,40 @@ export class OpenCvArucoDetector {
                 marker.addCorner(cornerMat.data32F[4], cornerMat.data32F[5]);
                 marker.addCorner(cornerMat.data32F[6], cornerMat.data32F[7]);
                 
+                // The center is calculated here in pixels for use when correction is not available
+                marker.center = marker.calculateCenter();
                 markerList.push(marker);
             }
         }
         
         // --- Perspective Correction Step ---
-        if (calibration && calibration.image_to_board_matrix && !calibration.image_to_board_matrix.empty()) {
-            const boardDimensions = Config.boardDimensions; // e.g., 360mm
+        if (calibration && 
+            calibration.image_to_board_matrix && !calibration.image_to_board_matrix.empty() &&
+            calibration.board_to_image_matrix && !calibration.board_to_image_matrix.empty()
+            ) {
+            
+            const boardDimensions = Config.boardDimensions;
             const boardCenter = new Point(boardDimensions / 2, boardDimensions / 2);
-            const gridToMmScale = boardDimensions / 8.0;
 
-            // Create a scaling matrix to convert from 8x8 grid to mm
-            const scaleMatrix = this.cv.matFromArray(3, 3, this.cv.CV_64F, [
-                gridToMmScale, 0, 0,
-                0, gridToMmScale, 0,
-                0, 0, 1
-            ]);
-
-            const mmHomography = new this.cv.Mat();
-            const emptyMat = new this.cv.Mat(); // Matrix for gemm, prevent memory leak
-
-            // Create the final homography: image -> board (mm)
-            // mmHomography = scaleMatrix * image_to_board_matrix
-            this.cv.gemm(scaleMatrix, calibration.image_to_board_matrix, 1, emptyMat, 0, mmHomography, 0);
-
-            // Convert the 64F homography matrix to 32F for perspectiveTransform
-            const mmHomography32F = new this.cv.Mat();
-            mmHomography.convertTo(mmHomography32F, this.cv.CV_32F);
+            // Ensure matrices are 32F for the perspectiveTransform function
+            const image_to_board_32f = new this.cv.Mat();
+            const board_to_image_32f = new this.cv.Mat();
+            calibration.image_to_board_matrix.convertTo(image_to_board_32f, this.cv.CV_32F);
+            calibration.board_to_image_matrix.convertTo(board_to_image_32f, this.cv.CV_32F);
 
             this.perspectiveCorrector.correct(
                 markerList,
                 boardCenter,
                 Config.cameraHeightCali,
                 Config.markerSize,
-                mmHomography32F // Pass the 32F version
+                boardDimensions,
+                image_to_board_32f,
+                board_to_image_32f
             );
-            
-            // Memory cleanup for matrices created in this block
-            scaleMatrix.delete();
-            mmHomography.delete();
-            mmHomography32F.delete();
-            emptyMat.delete();
+
+            // Cleanup
+            image_to_board_32f.delete();
+            board_to_image_32f.delete();
         }
 
         gray.delete();

@@ -1,81 +1,62 @@
 import { Point } from '../models/Point.js';
 
-/**
- * Implements the algorithm to compensate for perspective distortion of ArUco markers.
- * The algorithm is described in .tasks/task2.md.
- */
 export class PerspectiveCorrector {
     constructor(cv) {
         this.cv = cv;
     }
 
-    /**
-     * Corrects the center of the markers for perspective distortion.
-     * @param {Marker[]} markers - The array of detected markers.
-     * @param {Point} boardCenter - The center of the chessboard in board coordinates (mm).
-     * @param {number} cameraHeight - The height of the camera above the board (mm).
-     * @param {number} markerSize - The physical size of the markers (mm).
-     * @param {cv.Mat} homography - The homography matrix to transform image to board coordinates.
-     * @returns {Marker[]} The markers with corrected center points.
-     */
-    correct(markers, boardCenter, cameraHeight, markerSize, homography) {
-        if (!homography || homography.empty()) {
-            return markers; // Cannot correct without homography
+    correct(markers, boardCenter, cameraHeight, markerSize, boardDimensions, image_to_board_matrix, board_to_image_matrix) {
+        if (!image_to_board_matrix || image_to_board_matrix.empty() || !board_to_image_matrix || board_to_image_matrix.empty()) {
+            return markers;
         }
+        
+        const gridToMmScale = boardDimensions / 8.0;
 
         for (const marker of markers) {
-            // The detector provides corners in image coordinates (pixels).
-            // We need to transform them to board coordinates (millimeters).
-            const transformedCorners = this._transformCorners(marker.corners, homography);
+            // Step 1: Transform pixel corners to grid corners
+            const gridCorners = this._transformPoints(marker.corners, image_to_board_matrix);
+            
+            // Step 2: Scale grid corners to millimeter corners
+            const mmCorners = gridCorners.map(c => new Point(c.x * gridToMmScale, c.y * gridToMmScale));
 
-            // 7. Визначення центру маркера (у міліметрах на площині дошки)
-            const centerMarker = this._calculateCenter(transformedCorners);
+            // Step 3: Calculate center, size, and height in millimeters
+            const centerMm = this._calculateCenter(mmCorners);
+            const sPiece = this._calculateAverageSideLength(mmCorners);
 
-            // 8. Визначення видимого розміру маркера (у міліметрах на площині дошки)
-            const sPiece = this._calculateAverageSideLength(transformedCorners);
-
-            // 10. Оцінка висоти
-            // h = H · (1 - M / Spiece)
+            if (sPiece < markerSize) continue;
             const h = cameraHeight * (1 - markerSize / sPiece);
+            if (h <= 0) continue;
 
-            if (h <= 0) {
-                // Height is not positive, no correction needed or possible
-                marker.correctedCenter = centerMarker;
-                continue;
-            }
-
-            // 11. Визначення напрямку перспективного зміщення
-            // V = CenterMarker − CenterBoard
-            const v = new Point(
-                centerMarker.x - boardCenter.x,
-                centerMarker.y - boardCenter.y
-            );
-
-            // 12. Компенсація координат
-            // Corrected = CenterMarker − α · V, where α = h / H
+            // Step 4: Calculate the corrected center in millimeters
+            const v = new Point(centerMm.x - boardCenter.x, centerMm.y - boardCenter.y);
             const alpha = h / cameraHeight;
-            const correctedCenter = new Point(
-                centerMarker.x - alpha * v.x,
-                centerMarker.y - alpha * v.y
+            const correctedMmCenter = new Point(
+                centerMm.x - alpha * v.x,
+                centerMm.y - alpha * v.y
             );
             
-            // Зберігаємо оригінальний та скоригований центр
-            marker.originalCenter = centerMarker;
-            marker.center = correctedCenter; // Оновлюємо основний центр на скоригований
+            // Step 5: Un-scale the corrected millimeter center back to a grid point
+            const correctedGridCenter = new Point(
+                correctedMmCenter.x / gridToMmScale,
+                correctedMmCenter.y / gridToMmScale
+            );
+
+            // Step 6: Transform the corrected grid point back to pixel coordinates
+            const correctedPixelCenter = this._transformPoints([correctedGridCenter], board_to_image_matrix);
+
+            if (correctedPixelCenter.length > 0) {
+                marker.center = correctedPixelCenter[0];
+            }
         }
 
         return markers;
     }
 
-    /**
-     * Transforms marker corners from image coordinates to board coordinates.
-     * @param {Point[]} corners - Array of 4 corner points in image coordinates.
-     * @param {cv.Mat} homography - The homography matrix.
-     * @returns {Point[]} Array of 4 transformed corner points in board coordinates.
-     * @private
-     */
-    _transformCorners(corners, homography) {
-        const src = this.cv.matFromArray(4, 1, this.cv.CV_32FC2, corners.flatMap(p => [p.x, p.y]));
+    _transformPoints(points, homography) {
+        if (points.length === 0) {
+            return [];
+        }
+        const src = this.cv.matFromArray(points.length, 1, this.cv.CV_32FC2, points.flatMap(p => [p.x, p.y]));
         const dst = new this.cv.Mat();
         
         this.cv.perspectiveTransform(src, dst, homography);
@@ -91,12 +72,6 @@ export class PerspectiveCorrector {
         return transformed;
     }
 
-    /**
-     * Calculates the center of a marker from its corners.
-     * @param {Point[]} corners - Array of 4 corner points.
-     * @returns {Point} The center point.
-     * @private
-     */
     _calculateCenter(corners) {
         let x = 0;
         let y = 0;
@@ -107,12 +82,6 @@ export class PerspectiveCorrector {
         return new Point(x / 4, y / 4);
     }
 
-    /**
-     * Calculates the average side length of a marker from its corners.
-     * @param {Point[]} corners - Array of 4 corner points.
-     * @returns {number} The average side length.
-     * @private
-     */
     _calculateAverageSideLength(corners) {
         const dist = (p1, p2) => Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
         
