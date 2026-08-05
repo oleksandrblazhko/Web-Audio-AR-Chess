@@ -128,7 +128,7 @@ export class Renderer {
                 ctx.beginPath();
                 ctx.arc(marker.center.x, marker.center.y, 6, 0, 2 * Math.PI);
                 ctx.fill();
-
+                /*
                 ctx.fillStyle = "cyan";
                 ctx.font = "12px Arial";
                 ctx.fillText(
@@ -136,6 +136,7 @@ export class Renderer {
                     marker.center.x + 10,
                     marker.center.y + 15
                 );
+                */
             }
         }
     }
@@ -192,7 +193,7 @@ export class Renderer {
                 if (marker.id === calibration.controlMarkerId) continue;
                 const p = marker.getPixelWidth();
                 const hRel = 1.0 - (calibration.pCalib / p);
-                
+                /*
                 if (hRel > 0.05) { // Показуємо тільки якщо помітно піднятий
                     const isCloseToCam = hRel > heightThreshold;
                     ctx.fillStyle = isCloseToCam ? "tomato" : "yellow";
@@ -203,6 +204,7 @@ export class Renderer {
                     );
                     yOffset += 20;
                 }
+                */
             }
         }
     }
