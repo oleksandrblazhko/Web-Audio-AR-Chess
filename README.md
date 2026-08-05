@@ -27,6 +27,8 @@
   "cameraProxHeightThreshold": 0.4,
   "markerTimeoutMs": 1000,
   "emaAlpha": 0.4,
+  "anyMarkerVision": true,
+  "gridColor": "cyan",
   "audioDirectory": "audio/",
   "safety_zone_margin_pct": 10
 }
@@ -35,7 +37,8 @@
 **Опис полів:**
 *   `cameraWidth`, `cameraHeight` (number): Розміри кадру для захоплення з камери.
 *   `fps` (number): Цільова частота кадрів.
-*   `markerColor`, `textColor` (string): Кольори для візуалізації рамок маркерів та їх ідентифікаторів.
+*   `markerColor` (string): Колір для візуалізації рамок маркерів.
+*   `textColor` (string): Колір для візуалізації ідентифікаторів маркерів (ID) та іншого тексту інтерфейсу.
 *   `lineWidth` (number): Товщина ліній для малювання.
 *   `dictionary` (string): Назва словника ArUco, що використовується (наприклад, `"DICT_4X4_1000"`).
 *   `detector` (string): Тип детектора (на даний момент `"opencv"`).
@@ -43,6 +46,8 @@
 *   `cameraProxHeightThreshold` (number): Поріг наближення до камери (відносна висота, `0.0` до `1.0`).
 *   `markerTimeoutMs` (number): Час у мілісекундах, після якого невидимий маркер вважається зниклим.
 *   `emaAlpha` (number): Коефіцієнт згладжування для позицій маркерів (фільтр EMA).
+*   `anyMarkerVision` (boolean): Якщо `true`, візуалізує всі виявлені маркери. Якщо `false`, візуалізує лише маркери, присутні в `objects.json`.
+*   `gridColor` (string): Колір ліній сітки, що відображається після калібрування (наприклад, `"cyan"`).
 *   `audioDirectory` (string): Відносний шлях до папки з аудіофайлами.
 *   `safety_zone_margin_pct` (number): Відсоток відступу безпечної зони від країв відеокадру.
 
@@ -57,21 +62,31 @@
         {
             "obj_id": 0,
             "obj_type": "control",
-            "marker_id": 13,
+            "marker_id": 467,
             "name": "control_object",
-            "audio_name": ""
+            "audio_name": "",
+            "color": "purple"
         },
         {
             "obj_id": 1,
-            "marker_id": 467,
+            "marker_id": 163,
             "name": "біла тура",
-            "audio_name": "tura.mp3"
+            "audio_name": "tura.mp3",
+            "color": "white"
         },
         {
             "obj_id": 9,
             "marker_id": 13,
             "name": "білий пішак",
-            "audio_name": "pishak.mp3"
+            "audio_name": "pishak.mp3",
+            "color": "white"
+        },
+        {
+            "obj_id": 17,
+            "marker_id": 366,
+            "name": "чорна тура",
+            "audio_name": "tura.mp3",
+            "color": "black"
         }
     ]
 }
@@ -85,6 +100,7 @@
 *   `obj_type` (string, необов'язково): Спеціальний тип об'єкта.
     *   `"control"`: Позначає маркер керування.
     *   `"border"`: Позначає один з кутових маркерів для калібрування ігрового поля.
+*   `color` (string, необов'язково): Колір кола, що проектується на центр маркера після калібрування (наприклад, `"red"`, `"green"`, `"white"`, `"black"`). Якщо не вказано, за замовчуванням використовується "blue".
 
 > [!WARNING]
 > **Конфлікт ID маркера:** У поточному файлі `objects.json` `marker_id: 13` використовується одночасно для об'єкта типу `"control"` (`obj_id: 0`) та для шахової фігури "білий пішак" (`obj_id: 9`). Це може призводити до неочікуваної поведінки, наприклад, до помилкового відтворення звуку при появі маркера керування.

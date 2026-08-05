@@ -51,7 +51,7 @@ let showOptimalZone = false;
 async function loadConfigurations() {
     let externalConfig = {};
     try {
-        const resConf = await fetch("config.json");
+        const resConf = await fetch(`config.json?t=${Date.now()}`);
         externalConfig = await resConf.json();
         Object.assign(Config, externalConfig);
         if (typeof externalConfig.safety_zone_margin_pct === "number") {
@@ -67,7 +67,7 @@ async function loadConfigurations() {
     }
 
     try {
-        const resObj = await fetch("objects.json");
+        const resObj = await fetch(`objects.json?t=${Date.now()}`);
         const config = await resObj.json();
         
         const borderIds = [];
@@ -287,6 +287,13 @@ function loop() {
         );
 
         // 5. Рендеринг зображення та графіки
+        
+        // Фільтрація маркерів для візуалізації
+        let markersToRender = Object.values(visibleMarkers);
+        if (Config.anyMarkerVision === false) {
+            markersToRender = markersToRender.filter(marker => objectsData.hasOwnProperty(marker.id));
+        }
+
         renderer.clear();
 
         // Віддзеркалення відео камери (якщо увімкнено)
@@ -302,12 +309,11 @@ function loop() {
 
         // Малювання меж та сітки
         renderer.drawBoundary(calibration);
-        renderer.drawTableGrid(calibration);
+        renderer.drawTableGrid(calibration, Config.gridColor);
 
         // Малювання видимих маркерів та їх проекцій
-        const markersList = Object.values(visibleMarkers);
-        renderer.drawMarkers(markersList);
-        renderer.drawProjectedMarkers(markersList, calibration);
+        renderer.drawMarkers(markersToRender, Config.textColor);
+        renderer.drawProjectedMarkers(markersToRender, calibration, objectsData);
 
         // Малювання безпечної зони
         if (showOptimalZone) {

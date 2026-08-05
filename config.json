@@ -2,8 +2,8 @@
   "cameraWidth": 640,
   "cameraHeight": 480,
   "fps": 30,
-  "markerColor": "#00FF00",
-  "textColor": "#00FF00",
+  "markerColor": "green",
+  "textColor": "green",
   "lineWidth": 3,
   "dictionary": "DICT_4X4_1000",
   "detector": "opencv",
@@ -11,6 +11,8 @@
   "cameraProxHeightThreshold": 0.4,
   "markerTimeoutMs": 1000,
   "emaAlpha": 0.4,
+  "anyMarkerVision": false,
+  "gridColor": "blue",
   "audioDirectory": "audio/",
   "safety_zone_margin_pct": 10
 }
