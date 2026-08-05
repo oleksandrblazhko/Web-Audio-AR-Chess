@@ -59,20 +59,30 @@ export class OpenCvArucoDetector {
                 0, 0, 1
             ]);
 
-            // Create the final homography: image -> board (mm)
             const mmHomography = new this.cv.Mat();
-            this.cv.gemm(scaleMatrix, calibration.image_to_board_matrix, 1, new this.cv.Mat(), 0, mmHomography, 0);
+            const emptyMat = new this.cv.Mat(); // Matrix for gemm, prevent memory leak
+
+            // Create the final homography: image -> board (mm)
+            // mmHomography = scaleMatrix * image_to_board_matrix
+            this.cv.gemm(scaleMatrix, calibration.image_to_board_matrix, 1, emptyMat, 0, mmHomography, 0);
+
+            // Convert the 64F homography matrix to 32F for perspectiveTransform
+            const mmHomography32F = new this.cv.Mat();
+            mmHomography.convertTo(mmHomography32F, this.cv.CV_32F);
 
             this.perspectiveCorrector.correct(
                 markerList,
                 boardCenter,
                 Config.cameraHeightCali,
                 Config.markerSize,
-                mmHomography
+                mmHomography32F // Pass the 32F version
             );
             
+            // Memory cleanup for matrices created in this block
             scaleMatrix.delete();
             mmHomography.delete();
+            mmHomography32F.delete();
+            emptyMat.delete();
         }
 
         gray.delete();
