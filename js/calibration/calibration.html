@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Camera Calibration</title>
+
+<link rel="stylesheet" href="css/calibration.css">
+
+</head>
+
+<body>
+
+<h2>Camera Calibration</h2>
+
+<video
+    id="video"
+    autoplay
+    playsinline
+></video>
+
+<canvas id="canvas"></canvas>
+
+<div id="info">
+
+<pre id="log">
+
+Waiting...
+
+</pre>
+
+<button id="saveButton">
+
+Save camera.json
+
+</button>
+
+</div>
+
+<script src="../opencv.js"></script>
+
+<script type="module" src="js/app.js"></script>
+
+</body>
+
+</html>

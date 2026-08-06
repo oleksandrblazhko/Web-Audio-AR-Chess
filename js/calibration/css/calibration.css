@@ -1,0 +1,29 @@
+body
+{
+    margin:0;
+    padding:20px;
+
+    font-family:Arial;
+}
+
+video
+{
+    display:none;
+}
+
+canvas
+{
+    border:1px solid black;
+}
+
+#info
+{
+    margin-top:20px;
+}
+
+button
+{
+    font-size:18px;
+    padding:10px;
+}
+
