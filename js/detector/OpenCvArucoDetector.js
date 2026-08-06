@@ -4,8 +4,9 @@ import { PerspectiveCorrector } from "./PerspectiveCorrector.js";
 import { Config } from "../config/config.js";
 
 export class OpenCvArucoDetector {
-    constructor(cv) {
+    constructor(cv, objectsData) { // Modified constructor to accept objectsData
         this.cv = cv;
+        this.objectsData = objectsData; // Store the objectsData
 
         const dictionary = this.cv.getPredefinedDictionary(this.cv.DICT_4X4_1000);
         const parameters = new this.cv.aruco_DetectorParameters();
@@ -73,16 +74,25 @@ export class OpenCvArucoDetector {
         calibration.image_to_board_matrix.convertTo(image_to_board_32f, this.cv.CV_32F);
         calibration.board_to_image_matrix.convertTo(board_to_image_32f, this.cv.CV_32F);
 
-        // This method will now modify the markers in the list directly
-        this.perspectiveCorrector.correct(
-            markers,
-            boardCenter,
-            Config.cameraHeightCali,
-            Config.markerSize,
-            boardDimensions,
-            image_to_board_32f,
-            board_to_image_32f
-        );
+        // Iterate through each marker and apply correction individually
+        // The perspectiveCorrector.correct method will now operate on a single marker
+        for (const marker of markers) {
+            const objData = this.objectsData[marker.id];
+            // Only apply correction if marker_height is defined for this marker
+            if (objData && objData.marker_height !== undefined) {
+                const markerHeight = objData.marker_height;
+
+                this.perspectiveCorrector.correct(
+                    marker, // Pass single marker
+                    boardCenter,
+                    Config.cameraHeightCali,
+                    boardDimensions,
+                    image_to_board_32f,
+                    board_to_image_32f,
+                    markerHeight // Pass known marker height
+                );
+            }
+        }
 
         // Cleanup
         image_to_board_32f.delete();

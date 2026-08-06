@@ -22,10 +22,13 @@ const canvas = document.getElementById("canvas");
 // ----------------------------------------------------
 const cv = await OpenCvLoader.waitForOpenCV();
 
+// Глобальні змінні стану
+let objectsData = {};
+
 // ----------------------------------------------------
 // 2. Створення модулів
 // ----------------------------------------------------
-const detector = DetectorFactory.create(cv);
+const detector = DetectorFactory.create(cv, objectsData);
 const camera = new CameraManager(video);
 const renderer = new Renderer(canvas);
 const frameProvider = new FrameProvider(video);
@@ -39,7 +42,6 @@ const proximityDetector = new ProximityDetector(audioManager, 500);
 // Глобальні змінні стану
 const visibleMarkers = {};  // markerId -> Marker
 const markerFilters = {};   // markerId -> Array of 4 Point (for EMA)
-let objectsData = {};
 let safetyZoneMarginPct = 10; // Default safety zone margin percentage
 
 let mirrorEnabled = false;
