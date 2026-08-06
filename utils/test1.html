@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>solvePnP Test</title>
+<style>
+body{
+    font-family: monospace;
+    margin:20px;
+}
+pre{
+    border:1px solid #aaa;
+    padding:10px;
+    background:#f8f8f8;
+    white-space:pre-wrap;
+}
+</style>
+</head>
+
+<body>
+
+<h2>OpenCV solvePnP Test</h2>
+
+<pre id="log"></pre>
+
+<script>
+
+function log(s)
+{
+    console.log(s);
+    document.getElementById("log").textContent += s + "\n";
+}
+
+function testSolvePnP()
+{
+    log("");
+    log("===== solvePnP =====");
+
+    //----------------------------------------------------
+    // Marker size
+    //----------------------------------------------------
+
+    const markerSize = 10.0;
+
+    const half = markerSize / 2.0;
+
+    //----------------------------------------------------
+    // 3D coordinates of marker corners
+    //----------------------------------------------------
+
+    const objectPoints = cv.matFromArray(
+        4,
+        1,
+        cv.CV_32FC3,
+        [
+
+            -half,-half,0,
+             half,-half,0,
+             half, half,0,
+            -half, half,0
+
+        ]
+    );
+
+    //----------------------------------------------------
+    // Image coordinates
+    //----------------------------------------------------
+
+    const imagePoints = cv.matFromArray(
+        4,
+        1,
+        cv.CV_32FC2,
+        [
+
+            300,220,
+            340,220,
+            340,260,
+            300,260
+
+        ]
+    );
+
+    //----------------------------------------------------
+    // Camera matrix
+    //----------------------------------------------------
+
+    const cameraMatrix = cv.matFromArray(
+        3,
+        3,
+        cv.CV_64F,
+        [
+
+            800,0,320,
+            0,800,240,
+            0,0,1
+
+        ]
+    );
+
+    //----------------------------------------------------
+    // Distortion
+    //----------------------------------------------------
+
+    const distCoeffs = cv.Mat.zeros(5,1,cv.CV_64F);
+
+    //----------------------------------------------------
+
+    const rvec = new cv.Mat();
+    const tvec = new cv.Mat();
+
+    try
+    {
+
+        const ok = cv.solvePnP(
+
+            objectPoints,
+            imagePoints,
+            cameraMatrix,
+            distCoeffs,
+            rvec,
+            tvec
+
+        );
+
+        log("Returned : " + ok);
+
+        log("");
+
+        log("rvec:");
+
+        for(let i=0;i<3;i++)
+        {
+            log("  " + rvec.doubleAt(i,0));
+        }
+
+        log("");
+
+        log("tvec:");
+
+        for(let i=0;i<3;i++)
+        {
+            log("  " + tvec.doubleAt(i,0));
+        }
+
+    }
+    catch(e)
+    {
+        log("");
+        log("Exception:");
+        log(e);
+    }
+
+    objectPoints.delete();
+    imagePoints.delete();
+    cameraMatrix.delete();
+    distCoeffs.delete();
+    rvec.delete();
+    tvec.delete();
+}
+
+</script>
+
+<script src="opencv.js"></script>
+
+<script>
+
+if(cv instanceof Promise)
+{
+
+    log("cv is Promise");
+
+    cv.then((ready_cv)=>{
+
+        cv = ready_cv;
+
+        log("Promise resolved");
+
+        testSolvePnP();
+
+    });
+
+}
+else if(cv.getBuildInformation===undefined)
+{
+
+    cv.onRuntimeInitialized=()=>{
+
+        log("Runtime initialized");
+
+        testSolvePnP();
+
+    };
+
+}
+else
+{
+
+    testSolvePnP();
+
+}
+
+</script>
+
+</body>
+</html>

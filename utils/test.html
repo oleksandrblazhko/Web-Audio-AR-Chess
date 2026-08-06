@@ -2,68 +2,214 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>OpenCV Test</title>
+<title>OpenCV.js Feature Test</title>
+
+<style>
+body{
+    font-family: monospace;
+    margin:20px;
+}
+pre{
+    border:1px solid #ccc;
+    padding:10px;
+    background:#f8f8f8;
+    white-space:pre-wrap;
+}
+.ok{
+    color:green;
+}
+.fail{
+    color:red;
+}
+</style>
+
 </head>
 <body>
+
+<h2>OpenCV.js Feature Test</h2>
 
 <pre id="log"></pre>
 
 <script>
-function log(s) {
-    console.log(s);
-    document.getElementById("log").textContent += s + "\n";
+
+function log(text)
+{
+    console.log(text);
+    document.getElementById("log").textContent += text + "\n";
 }
+
+function checkFunctions(title, list)
+{
+    log("");
+    log("===== " + title + " =====");
+
+    for(const name of list)
+    {
+        const exists = (typeof cv[name] === "function");
+
+        log(
+            (exists ? "OK      : " : "MISSING : ")
+            + name
+        );
+    }
+}
+
+function checkClasses(title, list)
+{
+    log("");
+    log("===== " + title + " =====");
+
+    for(const name of list)
+    {
+        const exists = (typeof cv[name] === "function");
+
+        log(
+            (exists ? "OK      : " : "MISSING : ")
+            + name
+        );
+    }
+}
+
+function checkConstants(title, list)
+{
+    log("");
+    log("===== " + title + " =====");
+
+    for(const name of list)
+    {
+        const exists = (cv[name] !== undefined);
+
+        log(
+            (exists ? "OK      : " : "MISSING : ")
+            + name
+        );
+    }
+}
+
+function checkOpenCV()
+{
+    log("");
+    log("======================================");
+    log("OpenCV.js Runtime Test");
+    log("======================================");
+
+    log("");
+
+    if(cv.getBuildInformation)
+    {
+        const info = cv.getBuildInformation();
+
+        log("Version:");
+        log(info.split("\n")[0]);
+    }
+
+    //--------------------------------------------------------
+    // Core
+    //--------------------------------------------------------
+
+    checkFunctions("Core",[
+        "Mat",
+        "Size",
+        "Point",
+        "Scalar"
+    ]);
+
+    //--------------------------------------------------------
+    // ImgProc
+    //--------------------------------------------------------
+
+    checkFunctions("ImgProc",[
+        "resize",
+        "warpPerspective",
+        "perspectiveTransform",
+        "findHomography"
+    ]);
+
+    //--------------------------------------------------------
+    // Calib3D
+    //--------------------------------------------------------
+
+    checkFunctions("Calib3D",[
+        "solvePnP",
+        "solvePnPRansac",
+        "projectPoints",
+        "Rodrigues",
+        "undistort",
+        "undistortPoints"
+    ]);
+
+    //--------------------------------------------------------
+    // ArUco classes
+    //--------------------------------------------------------
+
+    checkClasses("ArUco Classes",[
+        "aruco_ArucoDetector",
+        "aruco_Dictionary",
+        "aruco_DetectorParameters",
+        "aruco_RefineParameters"
+    ]);
+
+    //--------------------------------------------------------
+    // ArUco functions
+    //--------------------------------------------------------
+
+    checkFunctions("ArUco Functions",[
+        "getPredefinedDictionary",
+        "drawDetectedMarkers",
+        "drawFrameAxes"
+    ]);
+
+    //--------------------------------------------------------
+    // Constants
+    //--------------------------------------------------------
+
+    checkConstants("Dictionary Constants",[
+        "aruco_PredefinedDictionaryType"
+    ]);
+
+    //--------------------------------------------------------
+
+    log("");
+    log("======================================");
+    log("Test finished");
+    log("======================================");
+}
+
 </script>
 
 <script src="opencv.js"></script>
 
 <script>
 
-function checkArUco() {
-    log("");
-    log("===== OpenCV =====");
-    log(cv.getBuildInformation().split("\n")[0]);
-
-    log("");
-    log("===== ArUco =====");
-
-    const classes = [
-        "aruco_ArucoDetector",
-        "aruco_Dictionary",
-        "aruco_DetectorParameters"
-    ];
-
-    for (const name of classes) {
-        log((typeof cv[name] === "function" ? "OK      : " : "MISSING : ") + name);
-    }
-}
-
-if (cv instanceof Promise) {
-
+if(cv instanceof Promise)
+{
     log("cv is Promise");
 
-    cv.then((ready_cv) => {
+    cv.then((ready_cv)=>
+    {
         cv = ready_cv;
+
         log("Promise resolved");
-        checkArUco();
+
+        checkOpenCV();
     });
-
 }
-else if (cv.getBuildInformation === undefined) {
+else if(cv.getBuildInformation === undefined)
+{
+    log("Waiting runtime...");
 
-    log("Waiting Runtime");
-
-    cv.onRuntimeInitialized = () => {
+    cv.onRuntimeInitialized = () =>
+    {
         log("Runtime initialized");
-        checkArUco();
+
+        checkOpenCV();
     };
-
 }
-else {
-
+else
+{
     log("Already initialized");
-    checkArUco();
 
+    checkOpenCV();
 }
 
 </script>
