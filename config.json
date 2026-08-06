@@ -15,7 +15,7 @@
   "gridColor": "blue",
   "audioDirectory": "audio/",
   "safety_zone_margin_pct": 10,
-  "cameraHeightCali": 330,
+  "cameraHeightCali": 430,
   "boardDimensions": 195,
   "markerSize": 9
 }
