@@ -237,8 +237,55 @@ function loop() {
         const mat = frameConverter.convert(frameCanvas);
         const now = performance.now();
         
+        // Тимчасове раннє відображення камери
+        renderer.clear();
+
+        if (mirrorEnabled) {
+
+            renderer.ctx.save();
+            renderer.ctx.translate(
+                renderer.canvas.width,
+                0
+            );
+            renderer.ctx.scale(-1,1);
+
+            renderer.ctx.drawImage(
+                frameCanvas,
+                0,
+                0
+            );
+
+            renderer.ctx.restore();
+
+        }
+        else {
+
+            renderer.ctx.drawImage(
+                frameCanvas,
+                0,
+                0
+            );
+
+        }
+
+
         // --- Step 1: Detect raw markers ---
-        const detectedMarkers = detector.detect(mat);
+        let detectedMarkers = [];
+
+        try {
+
+            detectedMarkers =
+                detector.detect(mat);
+
+        }
+        catch(e){
+
+            console.error(
+                "Detector error:",
+                e
+            );
+
+        }
 
         // --- Step 2: Update visible markers list and apply EMA smoothing ---
         for (const marker of detectedMarkers) {

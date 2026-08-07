@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>OpenCV ArUco solvePnP Camera Test</title>
+
+<style>
+
+body{
+
+    background:#202020;
+    color:white;
+    font-family:monospace;
+
+}
+
+
+canvas{
+
+    border:1px solid gray;
+
+}
+
+
+video{
+
+    display:none;
+
+}
+
+
+pre{
+
+    font-size:14px;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<h2>
+OpenCV ArUco DICT_4X4_1000 solvePnP
+</h2>
+
+
+<video
+    id="video"
+    autoplay
+    playsinline>
+</video>
+
+
+<canvas id="canvas"></canvas>
+
+
+<pre id="log"></pre>
+
+
+<script src="../../libs/opencv/opencv-4.14.js"></script>
+
+<script type="module" src="app.js"></script>
+
+
+</body>
+
+</html>

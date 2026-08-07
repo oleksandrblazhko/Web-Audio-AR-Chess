@@ -10,7 +10,7 @@ export class OpenCvArucoDetector {
 
         const dictionary = this.cv.getPredefinedDictionary(this.cv.DICT_4X4_1000);
         const parameters = new this.cv.aruco_DetectorParameters();
-        const refineParameters = new this.cv.aruco_RefineParameters(10.0, 3.0, false);
+        const refineParameters = new this.cv.aruco_RefineParameters(10, 3, false);
 
         this.detector = new this.cv.aruco_ArucoDetector(
             dictionary,
