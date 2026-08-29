@@ -68,7 +68,7 @@ index.html
         │   └── fetch("objects.json")
         │       └── for (obj of config.objects)
         │           ├── objectsData[obj.marker_id] = obj
-        │           ├── obj_type === "border"  → borderIds[] → Config.boundaryIds
+        │           ├── obj_type === "border"  → borderIds[] → Config.boundaryIds + borderCorners{id→name} → Config.boundaryCorners
         │           └── obj_type === "control" → controlId   → Config.controlMarkerId
         ├── camera.start()
         │   ├── navigator.mediaDevices.getUserMedia({video: {w, h, facingMode}})
@@ -126,9 +126,11 @@ loop()                                              [js/app.js:311]
 ├── Step 5: calibration.update() — тільки під час калібрування
 │   │                                                 [app.js:357-359 → Calibration.js:37]
 │   ├── збір center/getPixelWidth() по boundaryIds щоразово
-│   └── elapsed > 3000 мс → Calibration.finish(boundaryIds)
+│   └── elapsed > 3000 мс → Calibration.finish(boundaryIds, boundaryCorners)
 │       ├── середні центри + ширина 4 кутових маркерів
-│       ├── сортування кутів за кутом від центроїда (TL,TR,BR,BL)
+│       ├── прив'язка кутів дошки за ІМЕНАМИ маркерів (CAMERA-INDEPENDENT):
+│       │     left-top-corner→a8(0,0), left-bottom-corner→h8(8,0),
+│       │     right-bottom-corner→h1(8,8), right-top-corner→a1(0,8)
 │       ├── pCalib = середня піксельна ширина
 │       └── cv.getPerspectiveTransform() ×2
 │           → board_to_image_matrix, image_to_board_matrix

@@ -36,12 +36,12 @@ export class Calibration {
         return this.isCalibrating;
     }
 
-    update(visibleMarkers, boundaryIds) {
+    update(visibleMarkers, boundaryIds, boundaryCorners) {
         if (!this.isCalibrating) return;
 
         const elapsed = performance.now() - this.startTime;
         if (elapsed > this.durationMs) {
-            this.finish(boundaryIds);
+            this.finish(boundaryIds, boundaryCorners);
             return;
         }
 
@@ -58,7 +58,7 @@ export class Calibration {
         }
     }
 
-    finish(boundaryIds) {
+    finish(boundaryIds, boundaryCorners) {
         this.isCalibrating = false;
         console.log("Calibration finished. Calculating average positions...");
 
@@ -92,51 +92,53 @@ export class Calibration {
             return;
         }
 
-        // Sort marker IDs based on their angle from the centroid
-        const centers = [];
-        for (const mid in avgMarkerData) {
-            centers.push(avgMarkerData[mid].center);
+        // Прив'язка кутів дошки за іменами маркерів з objects.json
+        // (не залежить від розташування камери):
+        // name -> кут у сітковому просторі (0..8)
+        const CORNER_TO_BOARD = {
+            "left-top-corner": [0, 0],     // a8
+            "left-bottom-corner": [8, 0],  // h8
+            "right-bottom-corner": [8, 8], // h1
+            "right-top-corner": [0, 8]     // a1
+        };
+        const cornerOrder = [
+            "left-top-corner",
+            "left-bottom-corner",
+            "right-bottom-corner",
+            "right-top-corner"
+        ];
+
+        const idByName = {};
+        for (const mid in (boundaryCorners || {})) {
+            idByName[boundaryCorners[mid]] = mid;
         }
 
-        // Centroid calculation
-        let sumCX = 0, sumCY = 0;
-        for (const pt of centers) {
-            sumCX += pt.x;
-            sumCY += pt.y;
-        }
-        const centroid = new Point(sumCX / 4, sumCY / 4);
-
-        // Map markerId to angle
-        const midWithAngles = [];
-        for (const mid in avgMarkerData) {
-            const pt = avgMarkerData[mid].center;
-            const angle = Math.atan2(pt.y - centroid.y, pt.x - centroid.x);
-            midWithAngles.push({ id: parseInt(mid), angle: angle });
+        const sortedPoints = [];
+        const boardCorners = [];
+        for (const name of cornerOrder) {
+            const markerId = idByName[name];
+            const mData = markerId !== undefined ? avgMarkerData[markerId] : null;
+            if (!mData) {
+                console.error(`Error: Could not define table zone. Border marker "${name}" was not found among calibrated markers. Check that objects.json names all 4 border objects.`);
+                this.data = {};
+                return;
+            }
+            sortedPoints.push(mData.center);
+            boardCorners.push(CORNER_TO_BOARD[name]);
         }
 
-        // Sort by angle ascending
-        // Expected order: Top-Left, Top-Right, Bottom-Right, Bottom-Left
-        midWithAngles.sort((a, b) => a.angle - b.angle);
-        const sortedIds = midWithAngles.map(item => item.id);
-
-        const sortedPoints = sortedIds.map(mid => avgMarkerData[mid].center);
         this.tableZone = sortedPoints;
 
         // Calculate average pixel width pCalib
-        const widths = sortedIds.map(mid => avgMarkerData[mid].width);
+        const widths = cornerOrder.map(name => avgMarkerData[idByName[name]].width);
         this.pCalib = widths.reduce((sum, w) => sum + w, 0) / 4;
 
-        console.log("Calibration points sorted (TL, TR, BR, BL):", sortedPoints);
+        console.log("Calibration points sorted (a8, h8, h1, a1):", sortedPoints);
         console.log(`Average calibrated marker size pCalib: ${this.pCalib.toFixed(2)} px`);
 
         // OpenCV.js Perspective Transform calculation
         try {
-            const srcArray = [
-                0, 0, // TL
-                8, 0, // TR
-                8, 8, // BR
-                0, 8  // BL
-            ];
+            const srcArray = boardCorners.flat();
             const dstArray = [
                 sortedPoints[0].x, sortedPoints[0].y,
                 sortedPoints[1].x, sortedPoints[1].y,

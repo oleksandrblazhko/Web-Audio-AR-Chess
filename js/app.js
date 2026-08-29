@@ -74,12 +74,14 @@ async function loadConfigurations() {
         const config = await resObj.json();
         
         const borderIds = [];
+        const borderCorners = {};
         let controlId = null;
 
         for (const obj of config.objects) {
             objectsData[obj.marker_id] = obj;
             if (obj.obj_type === "border") {
                 borderIds.push(obj.marker_id);
+                borderCorners[obj.marker_id] = obj.name;
             } else if (obj.obj_type === "control") {
                 controlId = obj.marker_id;
             }
@@ -93,6 +95,7 @@ async function loadConfigurations() {
         }
         if (borderIds.length === 4 && (!externalConfig || !externalConfig.boundaryIds)) {
             Config.boundaryIds = borderIds;
+            Config.boundaryCorners = borderCorners;
             console.log("Using boundary IDs from objects.json:", Config.boundaryIds);
         }
         if (controlId !== null && (!externalConfig || externalConfig.controlMarkerId === undefined)) {
@@ -131,15 +134,15 @@ function updateBoardState(markers, calibration) {
         
         const gridPt = calibration.projectToGrid(marker.correctedCenter || marker.center);
         if (gridPt) {
-            const gridX = Math.floor(gridPt.x);
-            const gridY = Math.floor(gridPt.y);
-            
-            if (gridX >= 0 && gridX < 8 && gridY >= 0 && gridY < 8) {
+            const cellX = Math.floor(gridPt.x);
+            const cellY = Math.floor(gridPt.y);
+
+            if (cellX >= 0 && cellX < 8 && cellY >= 0 && cellY < 8) {
                 const previousCell = boardState.getMarkerCell(marker.id);
                 const positionInfo = boardState.updateMarkerPosition(
                     marker.id,
-                    gridX,
-                    gridY,
+                    gridPt.x,
+                    gridPt.y,
                     objData || {}
                 );
                 
@@ -345,7 +348,7 @@ function loop() {
 
         // --- Step 5: Update calibration logic ---
         if (calibration.isCalibratingNow()) {
-            calibration.update(visibleMarkers, Config.boundaryIds);
+            calibration.update(visibleMarkers, Config.boundaryIds, Config.boundaryCorners);
         }
 
         // --- Step 5.5: Update board state ---

@@ -10,6 +10,7 @@ export const Config = {
 
     // Нові відносні параметри для смартфонів:
     boundaryIds: [145, 110, 425, 468],
+    boundaryCorners: {},           // markerId -> name кутового маркера (з objects.json)
     controlMarkerId: 85,
     gridProximityThreshold: 0.6,    // Поріг наближення на дошці (в одиницях сітки 0-8)
     cameraProxHeightThreshold: 0.4, // Поріг наближення до камери (відносна висота підняття 0.0..1.0)
