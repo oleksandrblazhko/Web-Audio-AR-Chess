@@ -12,6 +12,7 @@ import { Calibration } from "./core/Calibration.js";
 import { WebAudioManager } from "./audio/WebAudioManager.js";
 import { ProximityDetector } from "./detector/ProximityDetector.js";
 import { Point } from "./models/Point.js";
+import { BoardStateManager } from "./core/BoardStateManager.js";
 
 console.log("Application starting...");
 const video = document.getElementById("video");
@@ -35,6 +36,7 @@ const accessScreen = new AccessScreen();
 const calibration = new Calibration(cv);
 const audioManager = new WebAudioManager(Config.audioDirectory);
 const proximityDetector = new ProximityDetector(audioManager, 500);
+const boardState = new BoardStateManager();
 
 // Глобальні змінні стану
 const visibleMarkers = {};  // markerId -> Marker
@@ -44,6 +46,7 @@ let safetyZoneMarginPct = 10; // Default safety zone margin percentage
 
 let mirrorEnabled = false;
 let showOptimalZone = false;
+let showBoardState = false; // Нова змінна для відображення стану дошки
 
 // ----------------------------------------------------
 // 3. Завантаження конфігурації
@@ -103,7 +106,51 @@ async function loadConfigurations() {
     }
 }
 
-
+// Оновлення стану дошки на основі позицій маркерів
+function updateBoardState(markers, calibration) {
+    if (!calibration.image_to_board_matrix || calibration.image_to_board_matrix.empty()) {
+        return;
+    }
+    
+    // Очищаємо маркери, які зникли
+    const activeMarkerIds = new Set(markers.map(m => m.id));
+    for (const [markerId, cell] of boardState.markerToCell) {
+        if (!activeMarkerIds.has(markerId)) {
+            boardState.removeMarker(markerId);
+            console.log(`Marker ${markerId} removed from board (${cell})`);
+        }
+    }
+    
+    // Оновлюємо позиції активних маркерів
+    for (const marker of markers) {
+        // Пропускаємо граничні та контрольні маркери
+        const objData = objectsData[marker.id];
+        if (objData && (objData.obj_type === "border" || objData.obj_type === "control")) {
+            continue;
+        }
+        
+        const gridPt = calibration.projectToGrid(marker.correctedCenter || marker.center);
+        if (gridPt) {
+            const gridX = Math.floor(gridPt.x);
+            const gridY = Math.floor(gridPt.y);
+            
+            if (gridX >= 0 && gridX < 8 && gridY >= 0 && gridY < 8) {
+                const previousCell = boardState.getMarkerCell(marker.id);
+                const positionInfo = boardState.updateMarkerPosition(
+                    marker.id,
+                    gridX,
+                    gridY,
+                    objData || {}
+                );
+                
+                // Логування переміщень
+                if (positionInfo && previousCell && previousCell !== positionInfo.cell) {
+                    console.log(`Move detected: ${objData?.name || marker.id} ${previousCell} → ${positionInfo.cell}`);
+                }
+            }
+        }
+    }
+}
 
 // Створення панелі керування (UI)
 function createControlPanel() {
@@ -200,9 +247,33 @@ function createControlPanel() {
     zoneBtn.onmouseover = () => { zoneBtn.style.transform = "scale(1.05)"; };
     zoneBtn.onmouseout = () => { zoneBtn.style.transform = "scale(1)"; };
 
+    // Кнопка Стан Дошки
+    const boardBtn = document.createElement("button");
+    boardBtn.innerText = "Дошка: Вимк";
+    applyBtnStyles(boardBtn, "linear-gradient(135deg, #1f4068, #162447)");
+    boardBtn.onclick = () => {
+        showBoardState = !showBoardState;
+        boardBtn.innerText = `Дошка: ${showBoardState ? "Увімк" : "Вимк"}`;
+        boardBtn.style.background = showBoardState 
+            ? "linear-gradient(135deg, #00f0ff, #0072ff)" 
+            : "linear-gradient(135deg, #1f4068, #162447)";
+        
+        // Виводимо поточний стан дошки в консоль
+        if (showBoardState) {
+            console.log("=== Поточний стан дошки ===");
+            for (const piece of boardState.getAllPieces()) {
+                console.log(`${piece.cell}: ${piece.type} (${piece.markerId})`);
+            }
+            console.log("FEN:", boardState.getFEN());
+        }
+    };
+    boardBtn.onmouseover = () => { boardBtn.style.transform = "scale(1.05)"; };
+    boardBtn.onmouseout = () => { boardBtn.style.transform = "scale(1)"; };
+
     panel.appendChild(calibBtn);
     panel.appendChild(mirrorBtn);
     panel.appendChild(zoneBtn);
+    panel.appendChild(boardBtn);
     document.body.appendChild(panel);
 }
 
@@ -277,6 +348,11 @@ function loop() {
             calibration.update(visibleMarkers, Config.boundaryIds);
         }
 
+        // --- Step 5.5: Update board state ---
+        if (calibration.tableZone.length === 4 && !calibration.isCalibratingNow()) {
+            updateBoardState(markersToProcess, calibration);
+        }
+
         // --- Step 6: Proximity checks ---
         let closestDistance = Infinity;
         proximityDetector.checkCameraProximity(visibleMarkers, objectsData, calibration, Config.cameraProxHeightThreshold);
@@ -311,6 +387,11 @@ function loop() {
         renderer.drawTableGrid(calibration, Config.gridColor);
         renderer.drawMarkers(markersToRender, Config.textColor);
         renderer.drawProjectedMarkers(markersToRender, calibration, objectsData);
+        
+        // Відображення стану дошки
+        if (showBoardState && calibration.tableZone.length === 4) {
+            renderer.drawBoardState(boardState, calibration);
+        }
         
         if (showOptimalZone) {
             renderer.drawOptimalZone(safetyZoneMarginPct);

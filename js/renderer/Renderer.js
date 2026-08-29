@@ -148,15 +148,6 @@ export class Renderer {
                 ctx.beginPath();
                 ctx.arc(centerToProject.x, centerToProject.y, 6, 0, 2 * Math.PI);
                 ctx.fill();
-                /*
-                ctx.fillStyle = "cyan";
-                ctx.font = "12px Arial";
-                ctx.fillText(
-                    `Grid: (${gridPt.x.toFixed(1)}, ${gridPt.y.toFixed(1)})`,
-                    centerToProject.x + 10,
-                    centerToProject.y + 15
-                );
-                */
             }
         }
     }
@@ -182,18 +173,13 @@ export class Renderer {
         yOffset += 30;
 
         ctx.fillStyle = "white";
-        // ctx.fillText(`Поріг наближення на сітці: ${proximityThreshold.toFixed(1)} клітинок`, 20, yOffset);
         yOffset += 25;
 
-        if (controlMarkerVisible) {
-           // ctx.fillText("Маркер керування: ВИДИМИЙ", 20, yOffset);
+        if (controlMarkerVisible) {           
             yOffset += 25;
             
             if (isFinite(closestDistance)) {
-                ctx.fillStyle = closestDistance < proximityThreshold ? "tomato" : "lightgreen";
-                // ctx.fillText(`Найближча відстань: ${closestDistance.toFixed(2)} клітинок`, 20, yOffset);
-            } else {
-                // ctx.fillText("Найближча відстань: -", 20, yOffset);
+                ctx.fillStyle = closestDistance < proximityThreshold ? "tomato" : "lightgreen";                
             }
         } else {
             ctx.fillStyle = "orange";
@@ -205,26 +191,12 @@ export class Renderer {
         if (calibration.pCalib > 0) {
             ctx.fillStyle = "yellow";
             ctx.font = "14px Arial";
-            // ctx.fillText("Висота підняття маркерів (Z-вісь):", 20, yOffset);
             yOffset += 20;
-
             for (const id in visibleMarkers) {
                 const marker = visibleMarkers[id];
                 if (marker.id === calibration.controlMarkerId) continue;
                 const p = marker.getPixelWidth();
                 const hRel = 1.0 - (calibration.pCalib / p);
-                /*
-                if (hRel > 0.05) { // Показуємо тільки якщо помітно піднятий
-                    const isCloseToCam = hRel > heightThreshold;
-                    ctx.fillStyle = isCloseToCam ? "tomato" : "yellow";
-                    ctx.fillText(
-                        `ID ${marker.id}: H_rel = ${(hRel * 100).toFixed(0)}% ${isCloseToCam ? "(БЛИЗЬКО ДО КАМЕРИ!)" : ""}`,
-                        20,
-                        yOffset
-                    );
-                    yOffset += 20;
-                }
-                */
             }
         }
     }
