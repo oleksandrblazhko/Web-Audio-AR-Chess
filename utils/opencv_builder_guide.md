@@ -36,16 +36,18 @@ cd ~/dev
 git clone https://github.com/opencv/opencv.git
 cd opencv
 git fetch --all
-git tag -l "5*"
+git tag -l "4.*"
 
 git checkout -b 5.x origin/5.x
 git checkout 5.0.0
+git checkout 4.14.0
 
 ### 4 Завантаження OpenCV Contrib з додатковими модулями, наприклад, ArUco
 cd ~/dev
 git clone https://github.com/opencv/opencv_contrib.git
 cd opencv_contrib
 git checkout -b 5.x origin/5.x
+git checkout -b 4.x origin/4.x
 
 ### 5 Створення каталогу збірки
 rm -rf ~/dev/opencv-build
@@ -65,7 +67,8 @@ python platforms/js/build_js.py \
     --config_only \
     --cmake_option="-DOPENCV_EXTRA_MODULES_PATH=$HOME/dev/opencv_contrib/modules" \
     --cmake_option="-DWITH_HARFBUZZ=OFF" \
-    --cmake_option="-DBUILD_opencv_freetype=OFF"
+    --cmake_option="-DBUILD_opencv_freetype=OFF" \
+    --cmake_option="-DCMAKE_CXX_STANDARD=17"
 
 ### 8 Компіляція з використанням максимальної кількості ядер (через команду nproc)
 cd ~/dev/opencv-build
