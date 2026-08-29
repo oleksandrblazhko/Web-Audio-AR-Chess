@@ -60,6 +60,24 @@ export class PerspectiveCorrector {
             if (correctedPixelCorners.length === 4) {
                 marker.correctedCorners = correctedPixelCorners;
                 marker.correctedCenter = this._calculateCenter(correctedPixelCorners);
+
+                // Snap the yellow rectangle center to the center of the nearest grid cell
+                const gridCenter = this._calculateCenter(correctedGridCorners);
+                const col = Math.floor(gridCenter.x);
+                const row = Math.floor(gridCenter.y);
+
+                if (col >= 0 && col < 8 && row >= 0 && row < 8) {
+                    const snappedGridCenter = new Point(col + 0.5, row + 0.5);
+                    const snappedPixelCenterArray = this._transformPoints([snappedGridCenter], board_to_image_matrix);
+                    if (snappedPixelCenterArray.length === 1) {
+                        const snappedPixelCenter = snappedPixelCenterArray[0];
+                        const dx = snappedPixelCenter.x - marker.correctedCenter.x;
+                        const dy = snappedPixelCenter.y - marker.correctedCenter.y;
+                        
+                        marker.correctedCorners = marker.correctedCorners.map(c => new Point(c.x + dx, c.y + dy));
+                        marker.correctedCenter = snappedPixelCenter;
+                    }
+                }
             }
         }
 
