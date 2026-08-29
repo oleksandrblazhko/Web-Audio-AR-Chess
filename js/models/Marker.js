@@ -8,6 +8,8 @@ export class Marker {
         this.timestamp = performance.now();
         this.center = null; // The center of the marker in PIXEL coordinates.
         this.estimatedHeight = 0; // The estimated height in mm for debugging.
+        this.correctedCorners = [];
+        this.correctedCenter = null;
     }
 
     addCorner(x, y) {

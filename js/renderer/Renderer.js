@@ -122,7 +122,8 @@ export class Renderer {
 
         for (const marker of markers) {
             // Проектуємо центр на сітку столу
-            const gridPt = calibration.projectToGrid(marker.center);
+            const centerToProject = marker.correctedCenter || marker.center;
+            const gridPt = calibration.projectToGrid(centerToProject);
             if (gridPt) {
                 // Визначаємо колір: з об'єкта, або синій за замовчуванням
                 const obj = objectsData[marker.id];
@@ -131,15 +132,15 @@ export class Renderer {
                 // Малюємо на екрані невелике коло біля центру маркера із зазначенням координат сітки
                 ctx.fillStyle = color;
                 ctx.beginPath();
-                ctx.arc(marker.center.x, marker.center.y, 6, 0, 2 * Math.PI);
+                ctx.arc(centerToProject.x, centerToProject.y, 6, 0, 2 * Math.PI);
                 ctx.fill();
                 /*
                 ctx.fillStyle = "cyan";
                 ctx.font = "12px Arial";
                 ctx.fillText(
                     `Grid: (${gridPt.x.toFixed(1)}, ${gridPt.y.toFixed(1)})`,
-                    marker.center.x + 10,
-                    marker.center.y + 15
+                    centerToProject.x + 10,
+                    centerToProject.y + 15
                 );
                 */
             }

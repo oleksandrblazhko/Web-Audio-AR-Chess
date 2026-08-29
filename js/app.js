@@ -270,7 +270,7 @@ function loop() {
         
         // --- Step 4: Apply perspective correction (modifies markers in place) ---
         const markersToProcess = Object.values(visibleMarkers);
-        detector.correctMarkers(markersToProcess, calibration);
+        detector.correctMarkers(markersToProcess, calibration, objectsData);
 
         // --- Step 5: Update calibration logic ---
         if (calibration.isCalibratingNow()) {

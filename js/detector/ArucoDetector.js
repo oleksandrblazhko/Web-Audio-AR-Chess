@@ -4,7 +4,7 @@ export class ArucoDetector {
         throw new Error("detect() must be implemented.");
     }
 
-    correctMarkers(markers, calibration) {
+    correctMarkers(markers, calibration, objectsData) {
         throw new Error("correctMarkers() must be implemented.");
     }
 

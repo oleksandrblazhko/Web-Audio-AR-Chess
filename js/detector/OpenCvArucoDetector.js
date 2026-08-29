@@ -44,6 +44,8 @@ export class OpenCvArucoDetector {
                 
                 // The center is calculated here in pixels for use when correction is not available
                 marker.center = marker.calculateCenter();
+                marker.correctedCorners = marker.corners.map(c => new Point(c.x, c.y));
+                marker.correctedCenter = marker.center;
                 markerList.push(marker);
             }
         }
@@ -56,7 +58,7 @@ export class OpenCvArucoDetector {
         return markerList;
     }
 
-    correctMarkers(markers, calibration) {
+    correctMarkers(markers, calibration, objectsData) {
         if (!calibration || 
             !calibration.image_to_board_matrix || calibration.image_to_board_matrix.empty() ||
             !calibration.board_to_image_matrix || calibration.board_to_image_matrix.empty()
@@ -81,7 +83,8 @@ export class OpenCvArucoDetector {
             Config.markerSize,
             boardDimensions,
             image_to_board_32f,
-            board_to_image_32f
+            board_to_image_32f,
+            objectsData
         );
 
         // Cleanup

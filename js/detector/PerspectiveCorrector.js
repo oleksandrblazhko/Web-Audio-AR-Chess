@@ -5,7 +5,7 @@ export class PerspectiveCorrector {
         this.cv = cv;
     }
 
-    correct(markers, boardCenter, cameraHeight, markerSize, boardDimensions, image_to_board_matrix, board_to_image_matrix) {
+    correct(markers, boardCenter, cameraHeight, markerSize, boardDimensions, image_to_board_matrix, board_to_image_matrix, objectsData = {}) {
         if (!image_to_board_matrix || image_to_board_matrix.empty() || !board_to_image_matrix || board_to_image_matrix.empty()) {
             return markers;
         }
@@ -13,6 +13,10 @@ export class PerspectiveCorrector {
         const gridToMmScale = boardDimensions / 8.0;
 
         for (const marker of markers) {
+            // Always initialize corrected fields with raw/EMA ones first
+            marker.correctedCorners = marker.corners.map(c => new Point(c.x, c.y));
+            marker.correctedCenter = marker.center;
+
             // Step 1: Transform pixel corners to grid corners, then scale to millimeters
             const gridCorners = this._transformPoints(marker.corners, image_to_board_matrix);
             const mmCorners = gridCorners.map(c => new Point(c.x * gridToMmScale, c.y * gridToMmScale));
@@ -21,12 +25,21 @@ export class PerspectiveCorrector {
             const centerMm = this._calculateCenter(mmCorners);
             const sPiece = this._calculateAverageSideLength(mmCorners);
 
-            if (sPiece < markerSize) {
-                marker.estimatedHeight = 0;
-                continue;
-            };
-            const h = cameraHeight * (1 - markerSize / sPiece);
-            marker.estimatedHeight = h; // Store for debugging
+            // Look up predefined height from objectsData
+            const objDef = objectsData[marker.id];
+            let h = 0;
+            if (objDef && typeof objDef.marker_height === "number") {
+                h = objDef.marker_height;
+            } else {
+                // Fallback to dynamic estimation if predefined height is not available
+                if (sPiece < markerSize) {
+                    marker.estimatedHeight = 0;
+                    continue;
+                }
+                h = cameraHeight * (1 - markerSize / sPiece);
+            }
+
+            marker.estimatedHeight = h; // Store for debugging/display
             if (h <= 0) continue;
 
             // Step 3: Calculate the single correction vector in millimeter space
@@ -45,8 +58,8 @@ export class PerspectiveCorrector {
 
             // Step 7: Update the marker object with the fully corrected data
             if (correctedPixelCorners.length === 4) {
-                marker.corners = correctedPixelCorners;
-                marker.center = this._calculateCenter(correctedPixelCorners);
+                marker.correctedCorners = correctedPixelCorners;
+                marker.correctedCenter = this._calculateCenter(correctedPixelCorners);
             }
         }
 

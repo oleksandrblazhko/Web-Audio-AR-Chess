@@ -61,7 +61,8 @@ export class ProximityDetector {
             return closestDistForDisplay;
         }
 
-        const controlGridPt = calibration.projectToGrid(controlMarker.center);
+        const controlCenter = controlMarker.correctedCenter || controlMarker.center;
+        const controlGridPt = calibration.projectToGrid(controlCenter);
         if (!controlGridPt) {
             return closestDistForDisplay;
         }
@@ -98,7 +99,8 @@ export class ProximityDetector {
 
                 if (objDef.obj_type !== "control" && objDef.obj_type !== "border" && markers[objMarkerId] && objMarkerId !== controlMarker.id) {
                     const objMarker = markers[objMarkerId];
-                    const objGridPt = calibration.projectToGrid(objMarker.center);
+                    const objCenter = objMarker.correctedCenter || objMarker.center;
+                    const objGridPt = calibration.projectToGrid(objCenter);
 
                     if (objGridPt) {
                         const distance = Math.hypot(
@@ -136,7 +138,8 @@ export class ProximityDetector {
 
                 if (objDef.obj_type !== "control" && objDef.obj_type !== "border" && markers[objMarkerId] && objMarkerId !== controlMarker.id) {
                     const objMarker = markers[objMarkerId];
-                    const objGridPt = calibration.projectToGrid(objMarker.center);
+                    const objCenter = objMarker.correctedCenter || objMarker.center;
+                    const objGridPt = calibration.projectToGrid(objCenter);
 
                     if (objGridPt) {
                         const distance = Math.hypot(
