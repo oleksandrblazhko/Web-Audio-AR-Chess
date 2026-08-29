@@ -19,15 +19,15 @@ export class Renderer {
         if (!markers || markers.length === 0) return;
 
         const ctx = this.ctx;
-        ctx.strokeStyle = "lime";
-        ctx.lineWidth = 2;
         ctx.font = "9px Arial";
         ctx.fillStyle = textColor || "yellow";
 
         for (const marker of markers) {
             if (marker.corners.length < 4) continue;
 
-            // 1. Малювання рамки
+            // 1. Малювання зеленої рамки навколо фізичного маркера
+            ctx.strokeStyle = "lime";
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(marker.corners[0].x, marker.corners[0].y);
             for (let j = 1; j < 4; j++) {
@@ -35,6 +35,19 @@ export class Renderer {
             }
             ctx.closePath();
             ctx.stroke();
+
+            // 1b. Малювання жовтої рамки навколо скоригованого (проектованого на стіл) маркера
+            if (marker.estimatedHeight > 0 && marker.correctedCorners && marker.correctedCorners.length === 4) {
+                ctx.strokeStyle = "yellow";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(marker.correctedCorners[0].x, marker.correctedCorners[0].y);
+                for (let j = 1; j < 4; j++) {
+                    ctx.lineTo(marker.correctedCorners[j].x, marker.correctedCorners[j].y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
 
             // 2. Виведення ID маркера у стабільній позиції
             // Знаходимо верхню ліву точку обмежувального прямокутника
@@ -45,6 +58,7 @@ export class Renderer {
                 if (corner.y < minY) minY = corner.y;
             }
 
+            ctx.fillStyle = textColor || "yellow";
             ctx.fillText(`${marker.id}`, minX, minY - 20);
             if (marker.estimatedHeight > 0) {
                 ctx.fillStyle = "orange";
