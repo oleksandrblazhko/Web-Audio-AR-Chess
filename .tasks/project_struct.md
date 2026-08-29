@@ -1,8 +1,7 @@
-Оновлена структура проекту та дерево викликів функцій
-Оновлено 2026-08-29 на основі аналізу вихідного коду з інтеграцією BoardStateManager.
+# Cтруктура проекту та дерево викликів функцій
 Точка входу: index.html → js/app.js (ES-модуль із top-level await).
 
-1. Каталог проекту (код)
+## 1. Каталог проекту (код)
 text
 Web-Audio-AR-Chess/
 ├── index.html                  ← завантажує OpenCV + js/app.js; містить <video> і <canvas>
@@ -32,7 +31,8 @@ Web-Audio-AR-Chess/
     ├── ui/AccessScreen.js           ← оверлей «Натисніть для запуску камери»
     ├── models/ (Point, Marker, MarkerCollection, MarkerDetection, Frame)
     └── utils/logger.js              ← Logger.info/error (використовується лише CameraManager)
-2. Старт застосунку (одноразові виклики)
+
+## 2. Старт застосунку (одноразові виклики)
 text
 index.html
 └── <script src="libs/opencv/opencv-4.14.js">        ← готує window.cv (Promise)
@@ -84,7 +84,8 @@ index.html
         │   └── boardBtn.onclick  → showBoardState = !showBoardState  ← NEW
         │                         └→ console.log стану дошки + FEN
         └── requestAnimationFrame(loop)
-3. Головний цикл обробки кадру (виконується щоразово, ~30–60 fps)
+
+## 3. Головний цикл обробки кадру (виконується щоразово, ~30–60 fps)
 text
 loop()                                              [js/app.js:311]
 ├── frameProvider.getFrame()                        ← video → frameCanvas (2D context.drawImage)
@@ -188,7 +189,8 @@ loop()                                              [js/app.js:311]
     │   ├── «Калібрування...» / «Калібрування не виконано»
     │   └── «Маркер керування: ВИДИМИЙ/НЕВИДИМИЙ» (решта тексту закоментована)
     └── mat.delete()                                  ← освободить cv.Mat кадру
-4. Ключові об'єкти даних та їхні власники
+
+## 4. Ключові об'єкти даних та їхні власники
 Об'єкт	Створюється / модифікується	Споживається
 visibleMarkers (id → Marker)	loop() Steps 1–4	Calibration, ProximityDetector, Renderer, BoardStateManager
 markerFilters (EMA-стан)	loop() Step 2	loop()
@@ -198,46 +200,32 @@ closestDistance	checkControlMarkerProximity()	drawUIInfo() (лише для пр
 boardState.boardState (клітинка → фігура)	updateBoardState() → BoardStateManager.updateMarkerPosition()	Renderer.drawBoardState(), BoardStateManager.getFEN()
 boardState.markerToCell (markerId → клітинка)	updateBoardState()	Виявлення переміщень, видалення маркерів
 boardState.moveHistory	BoardStateManager.updateMarkerPosition()	Аналіз гри, відкат ходів
-5. Виклики, що не беруть участі в активному рантаймі
+
+## 5. Виклики, що не беруть участі в активному рантаймі
 ArucoDetector (js/detector/ArucoDetector.js) — абстрактна база, жодного наслідування у коді.
-
 CvLoader (js/core/cvLoader.js) — стара заміна OpenCvLoader.waitForOpenCV(), ніким не імпортується.
-
 Frame, MarkerCollection, MarkerDetection (js/models/) — імпортованими модулями не використовуються.
-
 WebAudioManager.stopAllSounds(), playBeep() поза calibration-beeps прямих викликів з loop() не мають.
-
 objects_marker_12mm.json, libs/opencv/opencv-4.10.js, utils/* — не підключені до index.html/app.js.
-
 BoardStateManager.cellToGrid() — не використовується в поточній версії (зарезервовано для майбутнього).
 
-6. Нові можливості з BoardStateManager
+## 6. Можливості з BoardStateManager
 Зберігання позицій:
 boardState (Map): клітинка ("e4") → інформація про фігуру
-
 markerToCell (Map): ID маркера → клітинка
-
 moveHistory (Array): історія всіх ходів
-
 Шахова нотація:
 Конвертація координат сітки (0-7) → шахова нотація ("a1"-"h8")
-
 Підтримка орієнтації дошки (white/black perspective)
-
 Виявлення ходів:
 Автоматичне визначення переміщень фігур
-
 Логування в консоль при зміні позиції
-
 Експорт FEN:
 Генерація FEN-рядка для інтеграції з шаховими рушіями
-
 Можливість збереження та аналізу позицій
-
 Візуалізація:
 Кнопка "Дошка" для перемикання відображення
-
 Виведення типу фігури та клітинки на canvas
-
 Консольний вивід для налагодження
+
 
