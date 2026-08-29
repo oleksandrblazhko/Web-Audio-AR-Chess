@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>OpenCV Test</title>
+</head>
+<body>
+
+<pre id="log"></pre>
+
+<script>
+function log(s) {
+    console.log(s);
+    document.getElementById("log").textContent += s + "\n";
+}
+</script>
+
+<script src="opencv.js"></script>
+
+<script>
+
+function checkArUco() {
+    log("");
+    log("===== OpenCV =====");
+    log(cv.getBuildInformation().split("\n")[0]);
+
+    log("");
+    log("===== ArUco =====");
+
+    const classes = [
+        "aruco_ArucoDetector",
+        "aruco_Dictionary",
+        "aruco_DetectorParameters"
+    ];
+
+    for (const name of classes) {
+        log((typeof cv[name] === "function" ? "OK      : " : "MISSING : ") + name);
+    }
+}
+
+if (cv instanceof Promise) {
+
+    log("cv is Promise");
+
+    cv.then((ready_cv) => {
+        cv = ready_cv;
+        log("Promise resolved");
+        checkArUco();
+    });
+
+}
+else if (cv.getBuildInformation === undefined) {
+
+    log("Waiting Runtime");
+
+    cv.onRuntimeInitialized = () => {
+        log("Runtime initialized");
+        checkArUco();
+    };
+
+}
+else {
+
+    log("Already initialized");
+    checkArUco();
+
+}
+
+</script>
+
+</body>
+</html>

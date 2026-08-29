@@ -16,25 +16,10 @@
 
     <!-- Налаштування OpenCV -->
     <script>
-        var Module = {
-
-            print(text) {
-                console.log("[OpenCV]", text);
-            },
-
-            printErr(text) {
-                console.error("[OpenCV]", text);
-            },
-
-            onRuntimeInitialized() {
-                console.log("=== OpenCV runtime initialized ===");
-            }
-
-        };
+        var Module = {};
     </script>
-
     <!-- OpenCV -->
-    <script src="libs/opencv/opencv.js"></script>
+    <script src="libs/opencv/opencv-4.14.js"></script>
 
     <!-- Ваш застосунок -->
     <script type="module" src="js/app.js"></script>

@@ -1,37 +1,45 @@
 export class OpenCvLoader {
 
-    static waitForOpenCV() {
+    static async waitForOpenCV() {
 
-        return new Promise((resolve) => {
+        console.log(
+            "window.cv:",
+            window.cv
+        );
 
+        console.log(
+            "Promise:",
+            window.cv instanceof Promise
+        );
 
-            if (window.cv && window.cv.Mat) {
+        if (!window.cv) {
 
-                console.log(
-                    "OpenCV ready immediately"
-                );
+            throw new Error(
+                "OpenCV is not loaded."
+            );
 
-                resolve(window.cv);
+        }
 
-                return;
+        const cv =
+            window.cv instanceof Promise
+                ? await window.cv
+                : window.cv;
 
-            }
+        console.log(
+            "OpenCV initialized"
+        );
 
+        console.log(
+            "Mat:",
+            cv.Mat
+        );
 
-            window.Module = window.Module || {};
+        console.log(
+            "Aruco:",
+            cv.aruco_ArucoDetector
+        );
 
-            window.Module.onRuntimeInitialized = () => {
-
-                console.log(
-                    "OpenCV ready from Module"
-                );
-
-                resolve(window.cv);
-
-            };
-
-
-        });
+        return cv;
 
     }
 

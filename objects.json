@@ -1,0 +1,301 @@
+{
+    "objects": [
+        {
+            "obj_id": 0,
+            "obj_type": "control",
+            "marker_id": 467,
+            "name": "control_object",
+            "audio_name": "",
+            "color": "purple",
+            "marker_height": 0
+        },
+        {
+            "obj_id": 1,
+            "marker_id": 163,
+            "name": "біла тура",
+            "audio_name": "tura.mp3",
+            "color": "white",
+            "marker_height": 40
+        },
+        {
+            "obj_id": 2,
+            "marker_id": 112,
+            "name": "біла тура",
+            "audio_name": "tura.mp3",
+            "color": "white",
+            "marker_height": 40
+        },
+        {
+            "obj_id": 3,
+            "marker_id": 946,
+            "name": "білий кінь",
+            "audio_name": "kin.mp3",
+            "color": "white",
+            "marker_height": 45
+        },
+        {
+            "obj_id": 4,
+            "marker_id": 164,
+            "name": "білий кінь",
+            "audio_name": "kin.mp3",
+            "color": "white",
+            "marker_height": 45
+        },
+        {
+            "obj_id": 5,
+            "marker_id": 660,
+            "name": "білий слон",
+            "audio_name": "slon.mp3",
+            "color": "white",
+            "marker_height": 56
+        },
+        {
+            "obj_id": 6,
+            "marker_id": 13,
+            "name": "білий слон",
+            "audio_name": "slon.mp3",
+            "color": "white",
+            "marker_height": 56
+        },
+        {
+            "obj_id": 7,
+            "marker_id": 874,
+            "name": "білий король",
+            "audio_name": "korol.mp3",
+            "color": "white",
+            "marker_height": 70
+        },
+        {
+            "obj_id": 8,
+            "marker_id": 430,
+            "name": "біла королева",
+            "audio_name": "koroleva.mp3",
+            "color": "white",
+            "marker_height": 77
+        },
+        {
+            "obj_id": 9,
+            "marker_id": 959,
+            "name": "білий пішак",
+            "audio_name": "pishak.mp3",
+            "color": "white",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 10,
+            "marker_id": 698,
+            "name": "білий пішак",
+            "audio_name": "pishak.mp3",
+            "color": "white",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 11,
+            "marker_id": 196,
+            "name": "білий пішак",
+            "audio_name": "pishak.mp3",
+            "color": "white",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 12,
+            "marker_id": 434,
+            "name": "білий пішак",
+            "audio_name": "pishak.mp3",
+            "color": "white",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 13,
+            "marker_id": 778,
+            "name": "білий пішак",
+            "audio_name": "pishak.mp3",
+            "color": "white",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 14,
+            "marker_id": 929,
+            "name": "білий пішак",
+            "audio_name": "pishak.mp3",
+            "color": "white",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 15,
+            "marker_id": 110,
+            "name": "білий пішак",
+            "audio_name": "pishak.mp3",
+            "color": "white",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 16,
+            "marker_id": 147,
+            "name": "білий пішак",
+            "audio_name": "pishak.mp3",
+            "color": "white",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 17,
+            "marker_id": 366,
+            "name": "чорна тура",
+            "audio_name": "tura.mp3",
+            "color": "black",
+            "marker_height": 40
+        },
+        {
+            "obj_id": 18,
+            "marker_id": 942,
+            "name": "чорна тура",
+            "audio_name": "tura.mp3",
+            "color": "black",
+            "marker_height": 40
+        },
+        {
+            "obj_id": 19,
+            "marker_id": 425,
+            "name": "чорний кінь",
+            "audio_name": "kin.mp3",
+            "color": "black",
+            "marker_height": 45
+        },
+        {
+            "obj_id": 20,
+            "marker_id": 107,
+            "name": "чорний кінь",
+            "audio_name": "kin.mp3",
+            "color": "black",
+            "marker_height": 45
+        },
+        {
+            "obj_id": 21,
+            "marker_id": 806,
+            "name": "чорний слон",
+            "audio_name": "slon.mp3",
+            "color": "black",
+            "marker_height": 56
+        },
+        {
+            "obj_id": 22,
+            "marker_id": 703,
+            "name": "чорний слон",
+            "audio_name": "slon.mp3",
+            "color": "black",
+            "marker_height": 56
+        },
+        {
+            "obj_id": 23,
+            "marker_id": 853,
+            "name": "чорна королева",
+            "audio_name": "koroleva.mp3",
+            "color": "black",
+            "marker_height": 77
+        },
+        {
+            "obj_id": 24,
+            "marker_id": 575,
+            "name": "чорний корол",
+            "audio_name": "korol.mp3",
+            "color": "black",
+            "marker_height": 70
+        },
+        {
+            "obj_id": 25,
+            "marker_id": 145,
+            "name": "чорний пішак",
+            "audio_name": "pishak.mp3",
+            "color": "black",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 26,
+            "marker_id": 917,
+            "name": "чорний пішак",
+            "audio_name": "pishak.mp3",
+            "color": "black",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 27,
+            "marker_id": 460,
+            "name": "чорний пішак",
+            "audio_name": "pishak.mp3",
+            "color": "black",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 28,
+            "marker_id": 464,
+            "name": "чорний пішак",
+            "audio_name": "pishak.mp3",
+            "color": "black",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 29,
+            "marker_id": 638,
+            "name": "чорний пішак",
+            "audio_name": "pishak.mp3",
+            "color": "black",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 30,
+            "marker_id": 794,
+            "name": "чорний пішак",
+            "audio_name": "pishak.mp3",
+            "color": "black",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 31,
+            "marker_id": 371,
+            "name": "чорний пішак",
+            "audio_name": "pishak.mp3",
+            "color": "black",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 32,
+            "marker_id": 327,
+            "name": "чорний пішак",
+            "audio_name": "pishak.mp3",
+            "color": "black",
+            "marker_height": 35
+        },
+        {
+            "obj_id": 33,
+            "obj_type": "border",
+            "marker_id": 898,
+            "name": "left-top-corner",
+            "audio_name": "",
+            "marker_height": 0
+        },
+        {
+            "obj_id": 34,
+            "obj_type": "border",
+            "marker_id": 813,
+            "name": "right-top-corner",
+            "audio_name": "",
+            "marker_height": 0
+        },
+        {
+            "obj_id": 35,
+            "obj_type": "border",
+            "marker_id": 157,
+            "name": "right-bottom-corner",
+            "audio_name": "",
+            "marker_height": 0
+        },
+        {
+            "obj_id": 36,
+            "obj_type": "border",
+            "marker_id": 941,
+            "name": "left-bottom-corner",
+            "audio_name": "",
+            "marker_height": 0
+        }
+    ]
+}

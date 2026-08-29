@@ -1,6 +1,5 @@
 export class OpenCvFrameConverter {
 
-
     constructor(cv) {
 
         this.cv = cv;
@@ -8,11 +7,9 @@ export class OpenCvFrameConverter {
     }
 
 
-    convert(frame) {
+    convert(canvas) {
 
-        return this.cv.matFromImageData(
-            frame.imageData
-        );
+        return this.cv.imread(canvas);
 
     }
 

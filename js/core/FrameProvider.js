@@ -1,15 +1,17 @@
-import { Frame } from "../models/Frame.js";
-
 export class FrameProvider {
 
     constructor(video) {
 
         this.video = video;
 
-        this.canvas = document.createElement("canvas");
-        this.context = this.canvas.getContext("2d");
+        this.canvas =
+            document.createElement("canvas");
+
+        this.context =
+            this.canvas.getContext("2d");
 
     }
+
 
     resize(width, height) {
 
@@ -17,6 +19,7 @@ export class FrameProvider {
         this.canvas.height = height;
 
     }
+
 
     getFrame() {
 
@@ -28,16 +31,8 @@ export class FrameProvider {
             this.canvas.height
         );
 
-        const imageData = this.context.getImageData(
-        0,
-        0,
-        this.canvas.width,
-        this.canvas.height
-    );
-
-    return new Frame(imageData);
+        return this.canvas;
 
     }
 
 }
-
