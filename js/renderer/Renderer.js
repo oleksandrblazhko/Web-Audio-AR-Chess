@@ -152,6 +152,64 @@ export class Renderer {
         }
     }
 
+    drawBoardState(boardState, calibration) {
+        if (!boardState || !calibration || !calibration.board_to_image_matrix) return;
+
+        const pieces = boardState.getAllPieces();
+        if (pieces.length === 0) return;
+
+        const ctx = this.ctx;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (const piece of pieces) {
+            if (typeof piece.gridX !== "number" || typeof piece.gridY !== "number") continue;
+
+            // Кути клітинки (col, row) → пікселі через board_to_image гомографію
+            const corners = [
+                calibration.projectToImage(new Point(piece.gridX, piece.gridY)),
+                calibration.projectToImage(new Point(piece.gridX + 1, piece.gridY)),
+                calibration.projectToImage(new Point(piece.gridX + 1, piece.gridY + 1)),
+                calibration.projectToImage(new Point(piece.gridX, piece.gridY + 1))
+            ];
+            if (corners.some(c => !c)) continue;
+
+            // Підсвічування зайнятої клітинки
+            ctx.beginPath();
+            ctx.moveTo(corners[0].x, corners[0].y);
+            for (let i = 1; i < 4; i++) {
+                ctx.lineTo(corners[i].x, corners[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = "rgba(0, 255, 255, 0.15)";
+            ctx.fill();
+            ctx.strokeStyle = "cyan";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            const cx = (corners[0].x + corners[1].x + corners[2].x + corners[3].x) / 4;
+            const cy = (corners[0].y + corners[1].y + corners[2].y + corners[3].y) / 4;
+
+            const isBlack = piece.color === "black";
+            ctx.fillStyle = isBlack ? "black" : (piece.color || "yellow");
+            ctx.strokeStyle = isBlack ? "white" : "black";
+
+            // Назва фігури + шахова нотація клітинки
+            ctx.font = "bold 13px Arial";
+            ctx.lineWidth = 3;
+            const label = piece.name || piece.cell;
+            ctx.strokeText(label, cx, cy - 7);
+            ctx.fillText(label, cx, cy - 7);
+
+            ctx.font = "11px Arial";
+            ctx.strokeText(piece.cell, cx, cy + 8);
+            ctx.fillText(piece.cell, cx, cy + 8);
+        }
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
+    }
+
     drawUIInfo(calibration, proximityThreshold, closestDistance, controlMarkerVisible, heightThreshold, visibleMarkers) {
         const ctx = this.ctx;
         ctx.fillStyle = "white";
