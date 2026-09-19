@@ -38,16 +38,13 @@ cd opencv
 git fetch --all
 git tag -l "4.*"
 
-git checkout -b 5.x origin/5.x
-git checkout 5.0.0
 git checkout 4.14.0
 
 ### 4 Завантаження OpenCV Contrib з додатковими модулями, наприклад, ArUco
 cd ~/dev
 git clone https://github.com/opencv/opencv_contrib.git
 cd opencv_contrib
-git checkout -b 5.x origin/5.x
-git checkout -b 4.x origin/4.x
+git checkout 4.14.0
 
 ### 5 Створення каталогу збірки
 rm -rf ~/dev/opencv-build
@@ -70,11 +67,9 @@ python platforms/js/build_js.py \
     --cmake_option="-DBUILD_opencv_freetype=OFF" \
     --cmake_option="-DCMAKE_CXX_STANDARD=17"
 
-### 8 Компіляція з використанням максимальної кількості ядер (через команду nproc)
+### 8 Компіляція з використанням максимальної кількості ядер (через команду nproc, яка визначає кількість процесорних ядер)
 cd ~/dev/opencv-build
 make -j$(nproc)
-
-$(nproc) автоматично визначає кількість процесорних ядер і використовує їх для паралельної компіляції.
 
 ### 9 Копіювання результату збірки
 ls ~/dev/opencv-build/bin/
@@ -83,18 +78,16 @@ opencv.js
 opencv_js.wasm
 cp opencv.js /...
 scp -P 1234 blazhko@localhost:/home/blazhko/dev/opencv-build/bin/opencv.js .
-
 scp -P 1234 blazhko@localhost:/home/blazhko/dev/opencv-build/bin/opencv_js.js .
 
 ### Перевірка роботи
-- запустити в каталозі сервер
+- запустити сервер в поточному каталозі
 http_server .
 - перевірити роботу
 http://127.0.0.1:8080/test.html
 
 
-### 
-## Інструкція створення OpenCV.js з підтримкою ArUco-модуля.
+## Інструкція створення OpenCV.js з підтримкою ArUco-модуля в ОС Windows
 
 Середовище:
 
@@ -110,7 +103,7 @@ http://127.0.0.1:8080/test.html
 
 ---
 
-# Етап 1. Перевірка Python
+### Етап 1. Перевірка Python
 
 Перевірка версії Python:
 
@@ -126,7 +119,7 @@ Python 3.10.0
 
 ---
 
-# Етап 2. Перевірка Git
+### Етап 2. Перевірка Git
 
 ```powershell
 git --version
@@ -140,7 +133,7 @@ git version 2.48.1.windows.1
 
 ---
 
-# Етап 3. Перевірка CMake
+### Етап 3. Перевірка CMake
 
 ```powershell
 cmake --version
@@ -154,7 +147,7 @@ cmake version 4.4.2
 
 ---
 
-# Етап 4. Встановлення Emscripten SDK
+### Етап 4. Встановлення Emscripten SDK
 
 Перехід у робочу директорію:
 
@@ -206,7 +199,7 @@ emcc (Emscripten gcc/clang-like replacement) ...
 
 ---
 
-# Етап 5. Завантаження OpenCV
+### Етап 5. Завантаження OpenCV
 
 Перехід у робочу директорію:
 
@@ -240,7 +233,7 @@ git status
 
 ---
 
-# Етап 6. Завантаження OpenCV Contrib
+### Етап 6. Завантаження OpenCV Contrib
 
 Перехід у робочу директорію:
 
@@ -268,7 +261,7 @@ git checkout 4.10.0
 
 ---
 
-# Етап 7. Встановлення Ninja
+### Етап 7. Встановлення Ninja
 
 Встановити Ninja:
 
@@ -300,7 +293,7 @@ ninja --version
 
 ---
 
-# Етап 8. Створення каталогу збірки
+### Етап 8. Створення каталогу збірки
 
 У PowerShell:
 
@@ -316,7 +309,7 @@ mkdir C:\dev\opencv-build
 
 ---
 
-# Етап 9. Налаштування Emscripten середовища
+### Етап 9. Налаштування Emscripten середовища
 
 Перед збіркою необхідно активувати SDK:
 
@@ -327,8 +320,7 @@ cd C:\dev\emsdk
 ```
 
 ---
-
-# Етап 10. Конфігурація OpenCV.js
+### Етап 10. Конфігурація OpenCV.js
 
 Перейти у каталог OpenCV:
 
@@ -349,7 +341,7 @@ python platforms/js/build_js.py C:\dev\opencv-build `
 
 ---
 
-# Етап 11. Виправлення конфігурації OpenCV.js
+### Етап 11. Виправлення конфігурації OpenCV.js
 
 Під час збірки OpenCV.js версії **4.10.0** було виявлено проблеми сумісності
 з деякими вебзастосунками та JavaScript-модулями.
@@ -361,7 +353,7 @@ cd C:\dev\opencv
 git checkout 4.12.0
 ```
 
-## 11.1. Перехід з C++11 на C++17
+### 11.1. Перехід з C++11 на C++17
 
 Файл:
 
@@ -383,7 +375,7 @@ C:\dev\opencv\modules\js\CMakeLists.txt
 
 ---
 
-## 11.2. Видалення DEMANGLE_SUPPORT
+### 11.2. Видалення DEMANGLE_SUPPORT
 
 У тому ж файлі:
 
@@ -415,7 +407,7 @@ set(EMSCRIPTEN_LINK_FLAGS "${EMSCRIPTEN_LINK_FLAGS} -s EXPORT_NAME=\"'cv'\"")
 
 ---
 
-# Етап 12. Компіляція
+### Етап 12. Компіляція
 
 Перейти у каталог збірки:
 
@@ -433,7 +425,7 @@ ninja opencv.js
 
 ---
 
-# Етап 13. Результат збірки
+### Етап 13. Результат збірки
 
 Після успішної компіляції будуть створені:
 
@@ -450,7 +442,7 @@ C:\dev\opencv-build\bin\
 
 ---
 
-# Етап 14. Перевірка ArUco
+### Етап 14. Перевірка ArUco
 
 Для перевірки необхідно переконатися, що OpenCV містить:
 
@@ -496,7 +488,7 @@ js/libs/opencv/opencv.js
 
 ---
 
-# Підсумок
+### Підсумок
 
 Отримана збірка підтримує:
 

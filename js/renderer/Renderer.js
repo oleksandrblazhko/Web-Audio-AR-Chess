@@ -19,15 +19,15 @@ export class Renderer {
         if (!markers || markers.length === 0) return;
 
         const ctx = this.ctx;
-        ctx.strokeStyle = "lime";
-        ctx.lineWidth = 2;
         ctx.font = "9px Arial";
         ctx.fillStyle = textColor || "yellow";
 
         for (const marker of markers) {
             if (marker.corners.length < 4) continue;
 
-            // 1. Малювання рамки
+            // 1. Малювання зеленої рамки навколо фізичного маркера
+            ctx.strokeStyle = "lime";
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(marker.corners[0].x, marker.corners[0].y);
             for (let j = 1; j < 4; j++) {
@@ -35,6 +35,19 @@ export class Renderer {
             }
             ctx.closePath();
             ctx.stroke();
+
+            // 1b. Малювання жовтої рамки навколо скоригованого (проектованого на стіл) маркера
+            if (marker.estimatedHeight > 0 && marker.correctedCorners && marker.correctedCorners.length === 4) {
+                ctx.strokeStyle = "yellow";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(marker.correctedCorners[0].x, marker.correctedCorners[0].y);
+                for (let j = 1; j < 4; j++) {
+                    ctx.lineTo(marker.correctedCorners[j].x, marker.correctedCorners[j].y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
 
             // 2. Виведення ID маркера у стабільній позиції
             // Знаходимо верхню ліву точку обмежувального прямокутника
@@ -45,6 +58,7 @@ export class Renderer {
                 if (corner.y < minY) minY = corner.y;
             }
 
+            ctx.fillStyle = textColor || "yellow";
             ctx.fillText(`${marker.id}`, minX, minY - 20);
             if (marker.estimatedHeight > 0) {
                 ctx.fillStyle = "orange";
@@ -122,7 +136,8 @@ export class Renderer {
 
         for (const marker of markers) {
             // Проектуємо центр на сітку столу
-            const gridPt = calibration.projectToGrid(marker.center);
+            const centerToProject = marker.correctedCenter || marker.center;
+            const gridPt = calibration.projectToGrid(centerToProject);
             if (gridPt) {
                 // Визначаємо колір: з об'єкта, або синій за замовчуванням
                 const obj = objectsData[marker.id];
@@ -131,19 +146,68 @@ export class Renderer {
                 // Малюємо на екрані невелике коло біля центру маркера із зазначенням координат сітки
                 ctx.fillStyle = color;
                 ctx.beginPath();
-                ctx.arc(marker.center.x, marker.center.y, 6, 0, 2 * Math.PI);
+                ctx.arc(centerToProject.x, centerToProject.y, 6, 0, 2 * Math.PI);
                 ctx.fill();
-                /*
-                ctx.fillStyle = "cyan";
-                ctx.font = "12px Arial";
-                ctx.fillText(
-                    `Grid: (${gridPt.x.toFixed(1)}, ${gridPt.y.toFixed(1)})`,
-                    marker.center.x + 10,
-                    marker.center.y + 15
-                );
-                */
             }
         }
+    }
+
+    drawBoardState(boardState, calibration) {
+        if (!boardState || !calibration || !calibration.board_to_image_matrix) return;
+
+        const pieces = boardState.getAllPieces();
+        if (pieces.length === 0) return;
+
+        const ctx = this.ctx;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (const piece of pieces) {
+            if (typeof piece.gridX !== "number" || typeof piece.gridY !== "number") continue;
+
+            // Кути клітинки (col, row) → пікселі через board_to_image гомографію
+            const corners = [
+                calibration.projectToImage(new Point(piece.gridX, piece.gridY)),
+                calibration.projectToImage(new Point(piece.gridX + 1, piece.gridY)),
+                calibration.projectToImage(new Point(piece.gridX + 1, piece.gridY + 1)),
+                calibration.projectToImage(new Point(piece.gridX, piece.gridY + 1))
+            ];
+            if (corners.some(c => !c)) continue;
+
+            // Підсвічування зайнятої клітинки
+            ctx.beginPath();
+            ctx.moveTo(corners[0].x, corners[0].y);
+            for (let i = 1; i < 4; i++) {
+                ctx.lineTo(corners[i].x, corners[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = "rgba(0, 255, 255, 0.15)";
+            ctx.fill();
+            ctx.strokeStyle = "cyan";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            const cx = (corners[0].x + corners[1].x + corners[2].x + corners[3].x) / 4;
+            const cy = (corners[0].y + corners[1].y + corners[2].y + corners[3].y) / 4;
+
+            const isBlack = piece.color === "black";
+            ctx.fillStyle = isBlack ? "black" : (piece.color || "yellow");
+            ctx.strokeStyle = isBlack ? "white" : "black";
+
+            // Назва фігури + шахова нотація клітинки
+            ctx.font = "bold 13px Arial";
+            ctx.lineWidth = 3;
+            const label = piece.name || piece.cell;
+            ctx.strokeText(label, cx, cy - 7);
+            ctx.fillText(label, cx, cy - 7);
+
+            ctx.font = "11px Arial";
+            ctx.strokeText(piece.cell, cx, cy + 8);
+            ctx.fillText(piece.cell, cx, cy + 8);
+        }
+
+        ctx.textAlign = "left";
+        ctx.textBaseline = "alphabetic";
     }
 
     drawUIInfo(calibration, proximityThreshold, closestDistance, controlMarkerVisible, heightThreshold, visibleMarkers) {
@@ -167,18 +231,13 @@ export class Renderer {
         yOffset += 30;
 
         ctx.fillStyle = "white";
-        // ctx.fillText(`Поріг наближення на сітці: ${proximityThreshold.toFixed(1)} клітинок`, 20, yOffset);
         yOffset += 25;
 
-        if (controlMarkerVisible) {
-           // ctx.fillText("Маркер керування: ВИДИМИЙ", 20, yOffset);
+        if (controlMarkerVisible) {           
             yOffset += 25;
             
             if (isFinite(closestDistance)) {
-                ctx.fillStyle = closestDistance < proximityThreshold ? "tomato" : "lightgreen";
-                // ctx.fillText(`Найближча відстань: ${closestDistance.toFixed(2)} клітинок`, 20, yOffset);
-            } else {
-                // ctx.fillText("Найближча відстань: -", 20, yOffset);
+                ctx.fillStyle = closestDistance < proximityThreshold ? "tomato" : "lightgreen";                
             }
         } else {
             ctx.fillStyle = "orange";
@@ -190,26 +249,12 @@ export class Renderer {
         if (calibration.pCalib > 0) {
             ctx.fillStyle = "yellow";
             ctx.font = "14px Arial";
-            // ctx.fillText("Висота підняття маркерів (Z-вісь):", 20, yOffset);
             yOffset += 20;
-
             for (const id in visibleMarkers) {
                 const marker = visibleMarkers[id];
                 if (marker.id === calibration.controlMarkerId) continue;
                 const p = marker.getPixelWidth();
                 const hRel = 1.0 - (calibration.pCalib / p);
-                /*
-                if (hRel > 0.05) { // Показуємо тільки якщо помітно піднятий
-                    const isCloseToCam = hRel > heightThreshold;
-                    ctx.fillStyle = isCloseToCam ? "tomato" : "yellow";
-                    ctx.fillText(
-                        `ID ${marker.id}: H_rel = ${(hRel * 100).toFixed(0)}% ${isCloseToCam ? "(БЛИЗЬКО ДО КАМЕРИ!)" : ""}`,
-                        20,
-                        yOffset
-                    );
-                    yOffset += 20;
-                }
-                */
             }
         }
     }

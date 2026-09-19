@@ -34,4 +34,27 @@ export class CameraManager{
 
     }
 
+
+    stop(){
+
+        const stream=this.video.srcObject;
+
+        if(stream){
+
+            for(const track of stream.getTracks()){
+
+                track.stop();
+
+            }
+
+        }
+
+        this.video.pause();
+
+        this.video.srcObject=null;
+
+        Logger.info("Camera stopped");
+
+    }
+
 }
