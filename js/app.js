@@ -48,6 +48,12 @@ let mirrorEnabled = false;
 let showOptimalZone = false;
 let showBoardState = false; // Нова змінна для відображення стану дошки
 
+// Стан завершення роботи
+let running = true;
+let rafId = null;
+let calibCountdownTimer = null;
+let controlPanel = null;
+
 // ----------------------------------------------------
 // 3. Завантаження конфігурації
 // ----------------------------------------------------
@@ -205,10 +211,11 @@ function createControlPanel() {
             let countdown = 3;
             calibBtn.disabled = true;
             calibBtn.style.opacity = "0.7";
-            const timer = setInterval(() => {
+            calibCountdownTimer = setInterval(() => {
                 countdown--;
                 if (countdown <= 0) {
-                    clearInterval(timer);
+                    clearInterval(calibCountdownTimer);
+                    calibCountdownTimer = null;
                     calibBtn.innerText = "Калібрувати";
                     calibBtn.disabled = false;
                     calibBtn.style.opacity = "1";
@@ -277,7 +284,89 @@ function createControlPanel() {
     panel.appendChild(mirrorBtn);
     panel.appendChild(zoneBtn);
     panel.appendChild(boardBtn);
+
+    // Кнопка Вихід (права сторона панелі)
+    const exitBtn = document.createElement("button");
+    exitBtn.innerText = "Вихід";
+    applyBtnStyles(exitBtn, "linear-gradient(135deg, #c31432, #6f0f1f)");
+    exitBtn.style.marginLeft = "8px";
+    exitBtn.onclick = () => exitApplication();
+    exitBtn.onmouseover = () => { exitBtn.style.transform = "scale(1.05)"; };
+    exitBtn.onmouseout = () => { exitBtn.style.transform = "scale(1)"; };
+    panel.appendChild(exitBtn);
+
+    controlPanel = panel;
     document.body.appendChild(panel);
+}
+
+// ----------------------------------------------------
+// 3.5 Завершення роботи програми
+// ----------------------------------------------------
+function exitApplication() {
+    running = false;
+
+    if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+    }
+
+    if (calibCountdownTimer !== null) {
+        clearInterval(calibCountdownTimer);
+        calibCountdownTimer = null;
+    }
+
+    audioManager.stopAllSounds();
+    if (audioManager.ctx) {
+        audioManager.ctx.close();
+        audioManager.ctx = null;
+    }
+
+    camera.stop();
+    renderer.clear();
+
+    if (controlPanel) {
+        controlPanel.remove();
+        controlPanel = null;
+    }
+
+    // Браузер дозволяє закрити вікно лише якщо його відкрито скриптом
+    // (окремий chrome --app=... вікно, PWA). У звичайній вкладці -- ні.
+    window.close();
+
+    setTimeout(showFinishedScreen, 250);
+}
+
+function showFinishedScreen() {
+    if (document.hidden) return;
+
+    const screen = document.createElement("div");
+    screen.style.cssText = `
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    `;
+
+    const label = document.createElement("div");
+    label.innerHTML = "Роботу програми завершено<br><span>Можна закрити це вікно</span>";
+    label.style.cssText = `
+        color: white;
+        font-family: Inter, sans-serif;
+        font-size: 26px;
+        text-align: center;
+        line-height: 1.6;
+    `;
+    label.querySelector("span").style.fontSize = "15px";
+    label.querySelector("span").style.opacity = "0.7";
+
+    screen.appendChild(label);
+    document.body.appendChild(screen);
 }
 
 // ----------------------------------------------------
@@ -297,13 +386,15 @@ async function start() {
     // Створюємо елементи UI
     createControlPanel();
 
-    requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(loop);
 }
 
 // ----------------------------------------------------
 // 5. Основний цикл обробки кадрів
 // ----------------------------------------------------
 function loop() {
+    if (!running) return;
+
     if (video.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA) {
         const frameCanvas = frameProvider.getFrame();
         const mat = frameConverter.convert(frameCanvas);
@@ -411,8 +502,8 @@ function loop() {
 
         mat.delete();
     }
-    
-    requestAnimationFrame(loop);
+
+    rafId = requestAnimationFrame(loop);
 }
 
 // ----------------------------------------------------
